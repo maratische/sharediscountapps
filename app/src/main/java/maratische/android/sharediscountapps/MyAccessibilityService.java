@@ -157,7 +157,11 @@ public class MyAccessibilityService extends AccessibilityService {
             Thread.sleep(7000);
 
             AccessibilityNodeInfo weatherRootNode = getRootInActiveWindow();
-            AccessibilityNodeInfo today = findElementByText("android.widget.TextView", weatherRootNode, "бонусов", null);
+            AccessibilityNodeInfo today = findElementByText("android.widget.TextView", weatherRootNode, null, "бонус");
+            if (today == null && findElementByText("android.widget.TextView", weatherRootNode,  null,"Только сегодня") != null) {
+                performGlobalAction(GLOBAL_ACTION_BACK);
+            }
+            today = findElementByText("android.widget.TextView", weatherRootNode, null, "бонус");
             clickIsClicable(today);
 
             takeScreenshot(Display.DEFAULT_DISPLAY,
