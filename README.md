@@ -29,3 +29,18 @@ adb install example.apk
 ![Step4](docs/step4.jpeg)
 ![Step5](docs/step5.jpeg)
 
+### Setup Telegram bot
+
+Obtaining a token is as simple as contacting @BotFather, issuing the /newbot command and following the steps until you're given a new token. 
+You can find a step-by-step guide https://core.telegram.org/bots/features#creating-a-new-bot.
+
+Your token will look something like this:
+```
+4839574812:AAFD39kkdpWt3ywyRZergyOLMaJhac60qc
+```
+set token in app
+![set token in app](docs/step6.jpeg)
+
+### allow you and you family to ask codes from app
+send any message to your telegram bot and set checkbox true for your name
+![permisions](docs/step7.jpeg)
