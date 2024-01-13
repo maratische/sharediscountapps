@@ -1,5 +1,6 @@
 package maratische.android.sharediscountapps.adapter
 
+import android.content.Context
 import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
@@ -7,17 +8,16 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.CompoundButton
+import android.widget.ImageButton
 import android.widget.TextView
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
+import maratische.android.sharediscountapps.ImageActivity
 import maratische.android.sharediscountapps.MainActivity4
 import maratische.android.sharediscountapps.R
 import maratische.android.sharediscountapps.SettingsUtil
 import maratische.android.sharediscountapps.TimeUtil.Companion.formatTimeFromLong
 import maratische.android.sharediscountapps.model.AppItem
-import java.time.Instant
-import java.time.LocalDateTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 class AppItemAdapter(private val items: ArrayList<AppItem>) :
     RecyclerView.Adapter<AppItemAdapter.AppItemViewHolder>() {
@@ -45,6 +45,7 @@ class AppItemAdapter(private val items: ArrayList<AppItem>) :
         private val timeView: TextView = itemView.findViewById(R.id.time)
         private val timeSuccess: TextView = itemView.findViewById(R.id.timeSuccess)
         private val button: Button = itemView.findViewById(R.id.update_button)
+        private val imagebutton: ImageButton = itemView.findViewById(R.id.image_button)
         private val checkboxActive: CheckBox = itemView.findViewById(R.id.checkbox_active)
         private var checkedChangeListener: OnCheckedChangeListener? = null
 
@@ -65,6 +66,11 @@ class AppItemAdapter(private val items: ArrayList<AppItem>) :
                 settings.timeLast = 0
                 SettingsUtil.saveSettings(item.key, settings, itemView.context)
                 itemView.context.sendBroadcast(Intent(MainActivity4.UPDATE_UI))
+            }
+            imagebutton.setOnClickListener {
+                val intent = Intent(itemView.context, ImageActivity::class.java)
+                intent.putExtra("key", item.key)
+                itemView.context.startActivity(intent)
             }
             var settings = SettingsUtil.loadSettings(item.key, itemView.context)
             checkedChangeListener?.setProgrammaticChange(true)
