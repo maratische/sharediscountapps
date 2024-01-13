@@ -16,4 +16,16 @@ You can also explore easily more about this repo in this [post](https://link.med
 
 [video1](docs/sharediscountapps2.mp4)
 [video2](docs/sharediscountapps1.mp4)
-# sharediscountapps
+# how install and config app
+
+### install apk to phone
+```
+adb install example.apk
+```
+### Setup Accessibility in android
+![Step1](docs/step1.jpeg)
+![Step2](docs/step2.jpeg)
+![Step3](docs/step3.jpeg)
+![Step4](docs/step4.jpeg)
+![Step5](docs/step5.jpeg)
+
