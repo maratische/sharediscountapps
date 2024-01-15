@@ -130,17 +130,19 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-            Thread.sleep(7000);
-
-            AccessibilityNodeInfo weatherRootNode = getRootInActiveWindow();
-            AccessibilityNodeInfo today = findElementByText("android.widget.TextView", weatherRootNode, null, "₽");
+            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "₽", 7,1);
             clickIsClicable(today);
 
-            Thread.sleep(5000);
-
-            takeScreenshot(Display.DEFAULT_DISPLAY,
-                    getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
-
+            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "Покажите штрих", 7,1);
+            if (today2 == null) {//бывает не срабатывает открытие, пробуем еще раз
+                today = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "₽", 7,1);
+                clickIsClicable(today);
+            }
+            today2 = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "Покажите штрих", 7,1);
+            if (today2 != null) {
+                takeScreenshot(Display.DEFAULT_DISPLAY,
+                        getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
+            }
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
             sendError(e.getMessage());
@@ -154,15 +156,17 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-            Thread.sleep(7000);
 
             AccessibilityNodeInfo weatherRootNode = getRootInActiveWindow();
-            AccessibilityNodeInfo today = findElementByText("android.widget.TextView", weatherRootNode, null, "бонус");
-            if (today == null && findElementByText("android.widget.TextView", weatherRootNode,  null,"Только сегодня") != null) {
+            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", weatherRootNode, null, "бонус", 5, 1);
+            if (today == null /*&& (
+                    findElementByText("android.widget.TextView", weatherRootNode, null, "Только сегодня") != null
+                    || findElementByText("android.widget.TextView", weatherRootNode, null, "Только для") != null)*/) {
                 performGlobalAction(GLOBAL_ACTION_BACK);
             }
-            today = findElementByText("android.widget.TextView", weatherRootNode, null, "бонус");
+            today = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "бонус", 5, 1);
             clickIsClicable(today);
+            today = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "Обновить", 5, 1);
 
             takeScreenshot(Display.DEFAULT_DISPLAY,
                     getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("spar.jpg", "spar", true));
@@ -180,13 +184,11 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-            Thread.sleep(7000);
 
-            AccessibilityNodeInfo weatherRootNode = getRootInActiveWindow();
-            AccessibilityNodeInfo today = findElementByText("android.widget.TextView", weatherRootNode, "Подробнее", null);
+            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), "Подробнее", null, 7, 1);
             clickIsClicable(today);
 
-            Thread.sleep(7000);
+            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), "Подробнее", null, 7, 1);
 
             takeScreenshot(Display.DEFAULT_DISPLAY,
                     getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("verniy.jpg", "verniy", true));
@@ -204,13 +206,11 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-            Thread.sleep(7000);
 
-            AccessibilityNodeInfo weatherRootNode = getRootInActiveWindow();
-            AccessibilityNodeInfo today = findElementByText("android.widget.TextView", weatherRootNode, null, "Показать");
+            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "Показать", 7, 1);
             clickIsClicable(today);
 
-            Thread.sleep(5000);
+            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "Показать", 5, 1);
 
             takeScreenshot(Display.DEFAULT_DISPLAY,
                     getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("magnit.jpg", "magnit", true));
@@ -228,10 +228,26 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-            Thread.sleep(7000);
-
-            takeScreenshot(Display.DEFAULT_DISPLAY,
-                    getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
+            AccessibilityNodeInfo today = waitAndfindElementById("android.widget.ImageView", getRootInActiveWindow(), "ru.myauchan.droid:id/code_image_view", 7, 1);
+            if (today != null) {//нашли кнопку
+                clickIsClicable(today);
+                AccessibilityNodeInfo carta = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "Ваша карта", 7, 1);
+                if (carta != null) {
+                    takeScreenshot(Display.DEFAULT_DISPLAY,
+                            getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
+                    return;
+                }
+            } else {
+                //не нашли кнопку, вдруг что на экране
+                performGlobalAction(GLOBAL_ACTION_BACK);
+                today = waitAndfindElementById("android.widget.ImageView", getRootInActiveWindow(), "ru.myauchan.droid:id/code_image_view", 7, 1);
+                ;
+                if (today != null) {//нашли кнопку
+                    takeScreenshot(Display.DEFAULT_DISPLAY,
+                            getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
+                    return;
+                }
+            }
 
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
@@ -281,6 +297,17 @@ public class MyAccessibilityService extends AccessibilityService {
         return findElementByText("android.widget.Button", nodeInfo, text, null);
     }
 
+    private AccessibilityNodeInfo waitAndFindElementByText(String elementType, AccessibilityNodeInfo nodeInfo, String equalText, String containText, int maxCount, int delayInSeconds) throws InterruptedException {
+        Thread.sleep(1000);
+        int counter = 0;
+        AccessibilityNodeInfo carta = null;
+        while (carta == null && counter++ < maxCount) {
+            Thread.sleep(1000 * delayInSeconds);
+            carta = findElementByText(elementType, nodeInfo, equalText, containText);
+        }
+        return carta;
+    }
+
     private AccessibilityNodeInfo findElementByText(String elementType, AccessibilityNodeInfo nodeInfo, String equalText, String containText) {
         if (nodeInfo == null) {
             return null;
@@ -308,28 +335,53 @@ public class MyAccessibilityService extends AccessibilityService {
         return null;
     }
 
-    private AccessibilityNodeInfo findElementById(String elementType, AccessibilityNodeInfo nodeInfo, String id) {
-        if (nodeInfo == null) {
-            return null;
+    private AccessibilityNodeInfo waitAndfindElementById(String elementType, AccessibilityNodeInfo nodeInfo, String id, int maxCount, int delayInSeconds) throws InterruptedException {
+        Thread.sleep(1000);
+        int counter = 0;
+        AccessibilityNodeInfo today = null;
+        while (today == null && counter++ < maxCount) {
+            Thread.sleep(1000 * delayInSeconds);
+            today = findElementById(elementType, nodeInfo, id);
         }
+        return today;
+    }
 
-        for (int i = 0; i < nodeInfo.getChildCount(); i++) {
-            AccessibilityNodeInfo child = nodeInfo.getChild(i);
-            if (child != null && child.getClassName() != null) {
+    private AccessibilityNodeInfo findElementById(String elementType, AccessibilityNodeInfo nodeInfo, String id) {
+        var elements = getRootInActiveWindow().findAccessibilityNodeInfosByViewId("ru.myauchan.droid:id/code_image_view");
+        if (elements != null) {
+            for (int i = 0; i < elements.size(); i++) {
+                var child = elements.get(i);
                 if (child.getClassName().toString().equals(elementType)) {
-                    if (child.getViewIdResourceName() != null && child.getViewIdResourceName().equals(id)) {
-                        return child;
-                    }
+                    return child;
                 }
             }
-
-            AccessibilityNodeInfo button = findElementById(elementType, child, id);
-            if (button != null) {
-                return button;
-            }
         }
-
         return null;
+//        if (nodeInfo == null) {
+//            return null;
+//        }
+//        for (int i = 0; i < nodeInfo.getChildCount(); i++) {
+//            AccessibilityNodeInfo child = nodeInfo.getChild(i);
+//            if (child != null && child.getClassName() != null) {
+//                if (child.getClassName().toString().equals(elementType)) {
+//                    if (child.getViewIdResourceName() != null || child.getPaneTitle() != null) {
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+//                            System.out.println(child.getViewIdResourceName() + " " + child.getUniqueId()+ " " + child.getWindowId() + " " + child.getPaneTitle());
+//                        }
+//                    }
+//                    if (child.getViewIdResourceName() != null && child.getViewIdResourceName().equals(id)) {
+//                        return child;
+//                    }
+//                }
+//            }
+//
+//            AccessibilityNodeInfo button = findElementById(elementType, child, id);
+//            if (button != null) {
+//                return button;
+//            }
+//        }
+//
+//        return null;
     }
 
     public void saveTempBitmap(String fname, Bitmap bitmap) {
