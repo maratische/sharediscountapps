@@ -199,6 +199,7 @@ class TelegramService : JobService() {
                     sendError("onFailure: ${e.message}")
                 }
                 override fun onResponse(call: Call, response: Response) {
+                    Log.e(TAG, "onResponse: ${response}")
                 }
             })
         } catch (e: Exception) {

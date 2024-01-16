@@ -130,15 +130,15 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "₽", 7,1);
+            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView",  null, "₽", 7,1);
             clickIsClicable(today);
 
-            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "Покажите штрих", 7,1);
+            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", null, "Покажите штрих", 7,1);
             if (today2 == null) {//бывает не срабатывает открытие, пробуем еще раз
-                today = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "₽", 7,1);
+                today = waitAndFindElementByText("android.widget.TextView",  null, "₽", 7,1);
                 clickIsClicable(today);
             }
-            today2 = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "Покажите штрих", 7,1);
+            today2 = waitAndFindElementByText("android.widget.TextView",  null, "Покажите штрих", 7,1);
             if (today2 != null) {
                 takeScreenshot(Display.DEFAULT_DISPLAY,
                         getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
@@ -158,15 +158,15 @@ public class MyAccessibilityService extends AccessibilityService {
 
 
             AccessibilityNodeInfo weatherRootNode = getRootInActiveWindow();
-            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", weatherRootNode, null, "бонус", 5, 1);
+            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", null, "бонус", 5, 1);
             if (today == null /*&& (
                     findElementByText("android.widget.TextView", weatherRootNode, null, "Только сегодня") != null
                     || findElementByText("android.widget.TextView", weatherRootNode, null, "Только для") != null)*/) {
                 performGlobalAction(GLOBAL_ACTION_BACK);
             }
-            today = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "бонус", 5, 1);
+            today = waitAndFindElementByText("android.widget.TextView",  null, "бонус", 5, 1);
             clickIsClicable(today);
-            today = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "Обновить", 5, 1);
+            today = waitAndFindElementByText("android.widget.TextView",  null, "Обновить", 5, 1);
 
             takeScreenshot(Display.DEFAULT_DISPLAY,
                     getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("spar.jpg", "spar", true));
@@ -185,10 +185,10 @@ public class MyAccessibilityService extends AccessibilityService {
             context.startActivity(intent);
 
 
-            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), "Подробнее", null, 7, 1);
+            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView",  "Подробнее", null, 7, 1);
             clickIsClicable(today);
 
-            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), "Подробнее", null, 7, 1);
+            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView",  "Подробнее", null, 7, 1);
 
             takeScreenshot(Display.DEFAULT_DISPLAY,
                     getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("verniy.jpg", "verniy", true));
@@ -207,10 +207,10 @@ public class MyAccessibilityService extends AccessibilityService {
             context.startActivity(intent);
 
 
-            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "Показать", 7, 1);
+            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView",  null, "Показать", 7, 1);
             clickIsClicable(today);
 
-            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "Показать", 5, 1);
+            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView",  null, "Показать", 5, 1);
 
             takeScreenshot(Display.DEFAULT_DISPLAY,
                     getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("magnit.jpg", "magnit", true));
@@ -228,10 +228,10 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-            AccessibilityNodeInfo today = waitAndfindElementById("android.widget.ImageView", getRootInActiveWindow(), "ru.myauchan.droid:id/code_image_view", 7, 1);
+            AccessibilityNodeInfo today = waitAndfindElementById("android.widget.ImageView",  "ru.myauchan.droid:id/code_image_view", 7, 1);
             if (today != null) {//нашли кнопку
                 clickIsClicable(today);
-                AccessibilityNodeInfo carta = waitAndFindElementByText("android.widget.TextView", getRootInActiveWindow(), null, "Ваша карта", 7, 1);
+                AccessibilityNodeInfo carta = waitAndFindElementByText("android.widget.TextView",  null, "Ваша карта", 7, 1);
                 if (carta != null) {
                     takeScreenshot(Display.DEFAULT_DISPLAY,
                             getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
@@ -240,7 +240,7 @@ public class MyAccessibilityService extends AccessibilityService {
             } else {
                 //не нашли кнопку, вдруг что на экране
                 performGlobalAction(GLOBAL_ACTION_BACK);
-                today = waitAndfindElementById("android.widget.ImageView", getRootInActiveWindow(), "ru.myauchan.droid:id/code_image_view", 7, 1);
+                today = waitAndfindElementById("android.widget.ImageView",  "ru.myauchan.droid:id/code_image_view", 7, 1);
                 ;
                 if (today != null) {//нашли кнопку
                     takeScreenshot(Display.DEFAULT_DISPLAY,
@@ -297,13 +297,13 @@ public class MyAccessibilityService extends AccessibilityService {
         return findElementByText("android.widget.Button", nodeInfo, text, null);
     }
 
-    private AccessibilityNodeInfo waitAndFindElementByText(String elementType, AccessibilityNodeInfo nodeInfo, String equalText, String containText, int maxCount, int delayInSeconds) throws InterruptedException {
+    private AccessibilityNodeInfo waitAndFindElementByText(String elementType, String equalText, String containText, int maxCount, int delayInSeconds) throws InterruptedException {
         Thread.sleep(1000);
         int counter = 0;
         AccessibilityNodeInfo carta = null;
         while (carta == null && counter++ < maxCount) {
             Thread.sleep(1000 * delayInSeconds);
-            carta = findElementByText(elementType, nodeInfo, equalText, containText);
+            carta = findElementByText(elementType, getRootInActiveWindow(), equalText, containText);
         }
         return carta;
     }
@@ -335,13 +335,13 @@ public class MyAccessibilityService extends AccessibilityService {
         return null;
     }
 
-    private AccessibilityNodeInfo waitAndfindElementById(String elementType, AccessibilityNodeInfo nodeInfo, String id, int maxCount, int delayInSeconds) throws InterruptedException {
+    private AccessibilityNodeInfo waitAndfindElementById(String elementType, String id, int maxCount, int delayInSeconds) throws InterruptedException {
         Thread.sleep(1000);
         int counter = 0;
         AccessibilityNodeInfo today = null;
         while (today == null && counter++ < maxCount) {
             Thread.sleep(1000 * delayInSeconds);
-            today = findElementById(elementType, nodeInfo, id);
+            today = findElementById(elementType, getRootInActiveWindow(), id);
         }
         return today;
     }
