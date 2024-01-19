@@ -14,15 +14,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import maratische.android.sharediscountapps.SettingsUtil.Companion.saveOffset
 import maratische.android.sharediscountapps.SettingsUtil.Companion.saveTelegramKey
-import maratische.android.sharediscountapps.model.AppItem
 import maratische.android.sharediscountapps.adapter.AppItemAdapter
 import maratische.android.sharediscountapps.adapter.AppUserAdapter
 import maratische.android.sharediscountapps.adapter.SimpleItemAdapter
-import maratische.android.sharediscountapps.model.AppTelegramUser
+import maratische.android.sharediscountapps.model.AppItem
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
-import java.lang.NumberFormatException
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -108,21 +106,33 @@ class MainActivity4 : AppCompatActivity() {
             AppItem("Spar", SettingsUtil.loadSettings("spar", applicationContext), "spar"),
             AppItem("Verniy", SettingsUtil.loadSettings("verniy", applicationContext), "verniy"),
             AppItem("Magnit", SettingsUtil.loadSettings("magnit", applicationContext), "magnit"),
-            AppItem("Pyaterka", SettingsUtil.loadSettings("pyaterka", applicationContext), "pyaterka"),
+            AppItem(
+                "Pyaterka",
+                SettingsUtil.loadSettings("pyaterka", applicationContext),
+                "pyaterka"
+            ),
         )
         (listApps.adapter as AppItemAdapter).setItems(appsStart)
 
-        val myDir = applicationContext.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
-        val file = File(myDir, "errors.txt")
-        if (!file.exists()) file.createNewFile()
-        try {
+        Thread {
+            val myDir = applicationContext.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
+            val file = File(myDir, "errors.txt")
+            if (!file.exists()) file.createNewFile()
+            try {
                 var time = System.currentTimeMillis()
-            val out = BufferedReader(FileReader(file))
-            (recyclerView.adapter as SimpleItemAdapter).setItems(out.readLines())
-            out.close()
-        } catch (e: Exception) {
-            ;
-        }
+                val out = BufferedReader(FileReader(file))
+                val errors = out.readLines().filter {
+                    (it.contains(";") && it.substring(0, it.indexOf(";"))
+                        .toLong() > System.currentTimeMillis() - 1000 * 60 * 60 * 24)
+                }.toList()
+                (recyclerView.adapter as SimpleItemAdapter).setItems(errors)
+                out.close()
+            } catch (e: Exception) {
+                ;
+            }
+            //run code on background thread
+//            MainActivity4.this.runOnUiThread {}
+        }.start()
 
         val settingsUsers = SettingsUtil.loadAppTelegramUsers(applicationContext)
         (listUsers.adapter as AppUserAdapter).setItems(settingsUsers.users)
@@ -131,7 +141,9 @@ class MainActivity4 : AppCompatActivity() {
     // Определение форматтера даты и времени
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
-    private fun formatTimeFromLong(timeInMillis: Long): String = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeInMillis), ZoneId.systemDefault()).format(formatter)
+    private fun formatTimeFromLong(timeInMillis: Long): String =
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(timeInMillis), ZoneId.systemDefault())
+            .format(formatter)
 
     override fun onStart() {
         super.onStart()
