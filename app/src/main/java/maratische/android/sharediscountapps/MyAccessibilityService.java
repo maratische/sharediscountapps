@@ -228,13 +228,14 @@ public class MyAccessibilityService extends AccessibilityService {
             context.startActivity(intent);
 
 
-            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", "Подробнее", null, 7, 1);
-            clickIsClicable(today);
-
-            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", "Подробнее", null, 7, 1);
-
-            takeScreenshot(new MyTakeScreenshotCallback("verniy.jpg", "verniy", true));
-
+            handlerFindElementByText(handler, "android.widget.TextView", "Подробнее", null, 7, 1,
+                    (t) -> {
+                        clickIsClicable(t);
+                        handler.postDelayed(() -> {
+                            takeScreenshot(new MyTakeScreenshotCallback("verniy.jpg", "verniy", true));
+                        }, 3000);
+                        return null;
+                    }, null);
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
             sendError(e.getMessage());
@@ -248,14 +249,13 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-
-            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", null, "Показать", 7, 1);
-            clickIsClicable(today);
-
-            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", null, "Показать", 5, 1);
-
-            takeScreenshot(new MyTakeScreenshotCallback("magnit.jpg", "magnit", true));
-
+            handlerFindElementByText(handler, "android.widget.TextView", null, "Показать", 7, 1,
+                    (t) -> {
+                        handler.postDelayed(() -> {
+                            takeScreenshot(new MyTakeScreenshotCallback("magnit.jpg", "magnit", true));
+                        }, 3000);
+                        return null;
+                    }, null);
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
             sendError(e.getMessage());
@@ -269,25 +269,32 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-            AccessibilityNodeInfo today = waitAndfindElementById("android.widget.ImageView", "ru.myauchan.droid:id/code_image_view", 7, 1);
-            if (today != null) {//нашли кнопку
-                clickIsClicable(today);
-                AccessibilityNodeInfo carta = waitAndFindElementByText("android.widget.TextView", null, "Ваша карта", 7, 1);
-                if (carta != null) {
-                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
-                    return;
-                }
-            } else {
-                //не нашли кнопку, вдруг что на экране
-                performGlobalAction(GLOBAL_ACTION_BACK);
-                today = waitAndfindElementById("android.widget.ImageView", "ru.myauchan.droid:id/code_image_view", 7, 1);
-                ;
-                if (today != null) {//нашли кнопку
-                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
-                    return;
-                }
-            }
-
+            handlerFindElementById(handler, "android.widget.ImageView", "ru.myauchan.droid:id/code_image_view", 7, 1,
+                    (t) -> {
+                        clickIsClicable(t);
+                        handlerFindElementByText(handler, "android.widget.TextView", null, "Ваша карта", 7, 1,
+                                (t2) -> {
+                                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
+                                    return null;
+                                }, null);
+                        return null;
+                    }, (t) -> {
+                        //не нашли кнопку, вдруг что на экране
+                        performGlobalAction(GLOBAL_ACTION_BACK);
+                        handler.postDelayed(() -> {
+                            handlerFindElementById(handler, "android.widget.ImageView", "ru.myauchan.droid:id/code_image_view", 7, 1,
+                                    (t3) -> {
+                                        clickIsClicable(t3);
+                                        handlerFindElementByText(handler, "android.widget.TextView", null, "Ваша карта", 7, 1,
+                                                (t4) -> {
+                                                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
+                                                    return null;
+                                                }, null);
+                                        return null;
+                                    }, null);
+                        }, 3000);
+                        return null;
+                    });
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
             sendError(e.getMessage());
@@ -335,7 +342,7 @@ public class MyAccessibilityService extends AccessibilityService {
     private void handlerFindElementByText(Handler handler, String elementType, String equalText, String containText, int maxCount, int delayInSeconds,
                                           Function<AccessibilityNodeInfo, Void> supplier,
                                           Function<AccessibilityNodeInfo, Void> supplierNull) {
-        int finalMaxCount = maxCount-1;
+        int finalMaxCount = maxCount - 1;
         handler.postDelayed(() -> {
             AccessibilityNodeInfo carta = findElementByText(elementType, getRootInActiveWindow(), equalText, containText);
             if (carta == null) {
@@ -348,14 +355,24 @@ public class MyAccessibilityService extends AccessibilityService {
                 if (supplier != null) supplier.apply(carta);
             }
         }, 1000 * delayInSeconds);
-//        Thread.sleep(1000);
-//        int counter = 0;
-//        AccessibilityNodeInfo carta = null;
-//        while (carta == null && counter++ < maxCount) {
-//            Thread.sleep(1000 * delayInSeconds);
-//            carta = findElementByText(elementType, getRootInActiveWindow(), equalText, containText);
-//        }
-//        return carta;
+    }
+
+    private void handlerFindElementById(Handler handler, String elementType, String id, int maxCount, int delayInSeconds,
+                                        Function<AccessibilityNodeInfo, Void> supplier,
+                                        Function<AccessibilityNodeInfo, Void> supplierNull) {
+        int finalMaxCount = maxCount - 1;
+        handler.postDelayed(() -> {
+            AccessibilityNodeInfo carta = findElementById(elementType, getRootInActiveWindow(), id);
+            if (carta == null) {
+                if (finalMaxCount > 0) {
+                    handlerFindElementById(handler, elementType, id, finalMaxCount, delayInSeconds, supplier, supplierNull);
+                } else {
+                    if (supplierNull != null) supplierNull.apply(carta);
+                }
+            } else {
+                if (supplier != null) supplier.apply(carta);
+            }
+        }, 1000 * delayInSeconds);
     }
 
     private AccessibilityNodeInfo waitAndFindElementByText(String elementType, String equalText, String containText, int maxCount, int delayInSeconds) throws InterruptedException {
