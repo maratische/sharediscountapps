@@ -138,69 +138,32 @@ public class MyAccessibilityService extends AccessibilityService {
             handlerFindElementByText(handler, "android.widget.TextView", null, "₽", 7, 1,
                     (t) -> {
                         clickIsClicable(t);
-                        try {
-                            handlerFindElementByText(handler, "android.widget.TextView", null, "штрих", 7, 1,
-                                    (t2) -> {
-                                        takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
-                                        return null;
-                                    },
-                                    (t2) -> {//бывает не срабатывает открытие, пробуем еще раз
-                                        try {
-                                            handlerFindElementByText(handler, "android.widget.TextView", null, "₽", 7, 1,
-                                                    (t3) -> {
-                                                        try {
-                                                            handlerFindElementByText(handler, "android.widget.TextView", null, "штрих", 7, 1,
-                                                                    (t4) -> {
-                                                                        takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
-                                                                        return null;
-                                                                    }, null);
-                                                        } catch (InterruptedException e) {
-                                                            throw new RuntimeException(e);
-                                                        }
-                                                        return null;
-                                                    },
-                                                    (t3) -> {
-                                                        return null;
-                                                    });
-                                        } catch (InterruptedException e) {
-                                            throw new RuntimeException(e);
-                                        }
-                                        return null;
-                                    });
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
+                        handlerFindElementByText(handler, "android.widget.TextView", null, "штрих", 7, 1,
+                                (t2) -> {
+                                    takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
+                                    return null;
+                                },
+                                (t2) -> {//бывает не срабатывает открытие, пробуем еще раз
+                                    handlerFindElementByText(handler, "android.widget.TextView", null, "₽", 7, 1,
+                                            (t3) -> {
+                                                handlerFindElementByText(handler, "android.widget.TextView", null, "штрих", 7, 1,
+                                                        (t4) -> {
+                                                            takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
+                                                            return null;
+                                                        }, null);
+                                                return null;
+                                            },
+                                            (t3) -> {
+                                                return null;
+                                            });
+                                    return null;
+                                });
                         return null;
                     }, (t) -> {
                         //ничего не делаем если не нашли кнопку с рублем
                         return null;
                     });
 
-        } catch (Exception e) {
-            System.out.println(" " + e.getMessage());
-            sendError(e.getMessage());
-        }
-    }
-
-    private void performActionPyaterka2() {
-        try {
-            Context context = getApplicationContext();
-            Intent intent = context.getPackageManager().getLaunchIntentForPackage(pyaterka);
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
-
-            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", null, "₽", 7, 1);
-            clickIsClicable(today);
-
-            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", null, "Покажите штрих", 7, 1);
-            if (today2 == null) {//бывает не срабатывает открытие, пробуем еще раз
-                today = waitAndFindElementByText("android.widget.TextView", null, "₽", 7, 1);
-                clickIsClicable(today);
-            }
-            today2 = waitAndFindElementByText("android.widget.TextView", null, "штрих", 7, 1);
-            if (today2 != null) {
-                takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
-            }
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
             sendError(e.getMessage());
@@ -214,19 +177,42 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-
-            AccessibilityNodeInfo weatherRootNode = getRootInActiveWindow();
-            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", null, "бонус", 5, 1);
-            if (today == null /*&& (
-                    findElementByText("android.widget.TextView", weatherRootNode, null, "Только сегодня") != null
-                    || findElementByText("android.widget.TextView", weatherRootNode, null, "Только для") != null)*/) {
+            handlerFindElementByText(handler, "android.widget.TextView", null, "бонус", 5, 1, (t) -> {
+                clickIsClicable(t);
+                handlerFindElementByText(handler, "android.widget.TextView", null, "Обновить", 5, 1, (t2) -> {
+                    takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+                    return null;
+                }, (t2) -> {
+                    takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+                    return null;
+                });
+                return null;
+            }, (t) -> {
                 performGlobalAction(GLOBAL_ACTION_BACK);
-            }
-            today = waitAndFindElementByText("android.widget.TextView", null, "бонус", 5, 1);
-            clickIsClicable(today);
-            today = waitAndFindElementByText("android.widget.TextView", null, "Обновить", 5, 1);
-
-            takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+                handlerFindElementByText(handler, "android.widget.TextView", null, "бонус", 5, 1, (t3) -> {
+                    clickIsClicable(t3);
+                    handlerFindElementByText(handler, "android.widget.TextView", null, "Обновить", 5, 1, (t4) -> {
+                        takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+                        return null;
+                    }, (t4) -> {
+                        takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+                        return null;
+                    });
+                    return null;
+                }, null);
+                return null;
+            });
+//            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", null, "бонус", 5, 1);
+//            if (today == null /*&& (
+//                    findElementByText("android.widget.TextView", weatherRootNode, null, "Только сегодня") != null
+//                    || findElementByText("android.widget.TextView", weatherRootNode, null, "Только для") != null)*/) {
+//                performGlobalAction(GLOBAL_ACTION_BACK);
+//            }
+//            today = waitAndFindElementByText("android.widget.TextView", null, "бонус", 5, 1);
+//            clickIsClicable(today);
+//            today = waitAndFindElementByText("android.widget.TextView", null, "Обновить", 5, 1);
+//
+//            takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
 
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
@@ -348,17 +334,13 @@ public class MyAccessibilityService extends AccessibilityService {
 
     private void handlerFindElementByText(Handler handler, String elementType, String equalText, String containText, int maxCount, int delayInSeconds,
                                           Function<AccessibilityNodeInfo, Void> supplier,
-                                          Function<AccessibilityNodeInfo, Void> supplierNull) throws InterruptedException {
-        int finalMaxCount = maxCount;
+                                          Function<AccessibilityNodeInfo, Void> supplierNull) {
+        int finalMaxCount = maxCount-1;
         handler.postDelayed(() -> {
             AccessibilityNodeInfo carta = findElementByText(elementType, getRootInActiveWindow(), equalText, containText);
             if (carta == null) {
                 if (finalMaxCount > 0) {
-                    try {
-                        handlerFindElementByText(handler, elementType, equalText, containText, finalMaxCount, delayInSeconds, supplier, supplierNull);
-                    } catch (InterruptedException e) {
-                        throw new RuntimeException(e);
-                    }
+                    handlerFindElementByText(handler, elementType, equalText, containText, finalMaxCount, delayInSeconds, supplier, supplierNull);
                 } else {
                     if (supplierNull != null) supplierNull.apply(carta);
                 }
@@ -366,7 +348,6 @@ public class MyAccessibilityService extends AccessibilityService {
                 if (supplier != null) supplier.apply(carta);
             }
         }, 1000 * delayInSeconds);
-
 //        Thread.sleep(1000);
 //        int counter = 0;
 //        AccessibilityNodeInfo carta = null;
@@ -568,37 +549,21 @@ public class MyAccessibilityService extends AccessibilityService {
 
             settings.setTimeLast(System.currentTimeMillis());
             SettingsUtil.Companion.saveSettings(timeSettingsName, settings, getApplicationContext());
-            for (int i = 0; i < 6; i++) {
-                try {
-                    Thread.sleep(500);
-                } catch (Exception e) {
-                    System.out.println(" " + e.getMessage());
-                    sendError(e.getMessage());
-                }
-            }
-            performGlobalAction(GLOBAL_ACTION_BACK);
-            for (int i = 0; i < 6; i++) {
-                try {
-                    Thread.sleep(500);
-                } catch (Exception e) {
-                    System.out.println(" " + e.getMessage());
-                    sendError(e.getMessage());
-                }
-            }
-            performGlobalAction(GLOBAL_ACTION_HOME);
-            for (int i = 0; i < 6; i++) {
-                try {
-                    Thread.sleep(500);
-                } catch (Exception e) {
-                    System.out.println(" " + e.getMessage());
-                    sendError(e.getMessage());
-                }
-            }
-
-            Context context = getApplicationContext();
-            Intent intent = context.getPackageManager().getLaunchIntentForPackage("maratische.android.sharediscountapps");
-            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-            context.startActivity(intent);
+            handler.postDelayed(() -> {
+                performGlobalAction(GLOBAL_ACTION_BACK);
+                handler.postDelayed(() -> {
+                    performGlobalAction(GLOBAL_ACTION_BACK);
+                    handler.postDelayed(() -> {
+                        performGlobalAction(GLOBAL_ACTION_HOME);
+                        handler.postDelayed(() -> {
+                            Context context = getApplicationContext();
+                            Intent intent = context.getPackageManager().getLaunchIntentForPackage("maratische.android.sharediscountapps");
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                            context.startActivity(intent);
+                        }, 1000);
+                    }, 1000);
+                }, 1000);
+            }, 3000);
         }
 
         @Override

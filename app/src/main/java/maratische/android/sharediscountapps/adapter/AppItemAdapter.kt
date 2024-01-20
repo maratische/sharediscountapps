@@ -53,7 +53,7 @@ class AppItemAdapter(private val items: ArrayList<AppItem>) :
         fun bind(item: AppItem) {
             textView.text = item.name
             timeView.text = formatTimeFromLong(item.timeStart)
-            timeSuccess.text = if (item.timeSuccess.toInt() == -1 || item.timeSuccess == item.timeStart) {
+            timeSuccess.text = if (item.timeSuccess.toInt() == -1 || item.timeSuccess/1000 == item.timeStart/1000) {
                 " "
             } else {
                 formatTimeFromLong(item.timeSuccess)
