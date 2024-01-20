@@ -35,6 +35,7 @@ class MainActivity4 : AppCompatActivity() {
 
     companion object {
         const val UPDATE_UI = "UPDATE_UI"
+        const val UPDATE_KEY = "UPDATE_KEY"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

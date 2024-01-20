@@ -66,41 +66,55 @@ class TelegramService : JobService() {
         return true
     }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val message = intent?.getStringExtra("key")
+        if (message != null) {
+            val requests = SettingsUtil.loadRequests(this)
+            requests[message]?.let {
+                val chatId = it
+                sendPhoto(chatId, message)
+                requests.remove(message)
+            }
+            SettingsUtil.saveRequests(requests,this)
+        }
+        return super.onStartCommand(intent, flags, startId)
+    }
+
     override fun onStopJob(params: JobParameters?): Boolean {
         // Вернуть true, чтобы перепланировать задачу, если она была прервана
         return true
     }
 
     fun getAllTelegramUpdates() {
-            try {
-                val offset =
-                    1L + loadOffset(applicationContext)
-                val request: Request = Request.Builder()
-                    .url("$baseUrl${SettingsUtil.loadTelegramKey(applicationContext)}/getUpdates?offset=$offset")
-                    .post(EMPTY_REQUEST)
-                    .build()
-                client.newCall(request).enqueue( object: Callback {
-                    override fun onFailure(call: Call, e: IOException) {
-                        Log.e(TAG, "onFailure: ${e.message}")
-                        sendError("onFailure: ${e.message}")
-                    }
+        try {
+            val offset =
+                1L + loadOffset(applicationContext)
+            val request: Request = Request.Builder()
+                .url("$baseUrl${SettingsUtil.loadTelegramKey(applicationContext)}/getUpdates?offset=$offset")
+                .post(EMPTY_REQUEST)
+                .build()
+            client.newCall(request).enqueue(object : Callback {
+                override fun onFailure(call: Call, e: IOException) {
+                    Log.e(TAG, "onFailure: ${e.message}")
+                    sendError("onFailure: ${e.message}")
+                }
 
-                    override fun onResponse(call: Call, response: Response) {
-                        var responseBody = response.body?.string()
-                        val entity: GetUpdates =
-                            gson.fromJson(responseBody, GetUpdates::class.java)
-                        if (entity?.ok == true && entity.result?.isNotEmpty() ?: false) {
-                            entity.result.sortedBy { it.update_id }.forEach {
-                                processGetUpdatesItem(it)
-                            }
+                override fun onResponse(call: Call, response: Response) {
+                    var responseBody = response.body?.string()
+                    val entity: GetUpdates =
+                        gson.fromJson(responseBody, GetUpdates::class.java)
+                    if (entity?.ok == true && entity.result?.isNotEmpty() ?: false) {
+                        entity.result.sortedBy { it.update_id }.forEach {
+                            processGetUpdatesItem(it)
                         }
                     }
+                }
 
-                })
-            } catch (e: Exception) {
-                e.message
-                sendError("onFailure: ${e.message}")
-            }
+            })
+        } catch (e: Exception) {
+            e.message
+            sendError("onFailure: ${e.message}")
+        }
     }
 
     fun processGetUpdatesItem(item: GetUpdatesItem) {
@@ -108,7 +122,13 @@ class TelegramService : JobService() {
         if (username?.isNotEmpty() == true) {
             //process user
             var users = SettingsUtil.loadAppTelegramUsers(applicationContext)
-            var user = users.users.filter { it.username == username }.firstOrNull() ?: AppTelegramUser(username, item.message?.from?.id ?: 0, System.currentTimeMillis(), false)
+            var user =
+                users.users.filter { it.username == username }.firstOrNull() ?: AppTelegramUser(
+                    username,
+                    item.message?.from?.id ?: 0,
+                    System.currentTimeMillis(),
+                    false
+                )
             user.timeLast = System.currentTimeMillis()
             users.users.add(user)
             SettingsUtil.saveAppTelegramUsers(users, applicationContext)
@@ -118,7 +138,7 @@ class TelegramService : JobService() {
             }
             //process message
             var text = item.message?.text?.lowercase()
-            if (text == "погода" || text == "/weather") {
+            if (text == "погода" || text == "/weather" || text == "/pogoda") {
                 sendPhoto(item.message?.chat?.id!!, "weather")
             } else if (text == "/auchan" || text == "auchan" || text == "ашан") {
                 sendPhoto(item.message?.chat?.id!!, "auchan")
@@ -130,11 +150,27 @@ class TelegramService : JobService() {
                 sendPhoto(item.message?.chat?.id!!, "verniy")
             } else if (text == "/5ka" || text == "пятерочка" || text == "пятерка") {
                 sendPhoto(item.message?.chat?.id!!, "pyaterka")
+            } else if (text == "/5ka_new") {
+                requestPhoto(item.message?.chat?.id!!, "pyaterka")
             } else {
                 sendMessage(item.message?.chat?.id!!, "hi! ${item.message?.text}")
             }
             saveOffset(item.update_id, applicationContext)
         }
+    }
+
+    private fun requestPhoto(chatId: Long, key: String) {
+        val requests = SettingsUtil.loadRequests(this)
+        requests[key] = chatId
+        SettingsUtil.saveRequests(requests , this)
+
+        var settingsStart = SettingsUtil.loadSettings("start", this)
+        settingsStart.timeLast = 0
+        SettingsUtil.saveSettings("start", settingsStart, this)
+        var settings = SettingsUtil.loadSettings(key, this)
+        settings.timeLast = 0
+        SettingsUtil.saveSettings(key, settings, this)
+        sendBroadcast(Intent(MainActivity4.UPDATE_UI))
     }
 
     private fun sendMessage(chatId: Long, text: String) {
@@ -154,11 +190,12 @@ class TelegramService : JobService() {
                 .url("$baseUrl${SettingsUtil.loadTelegramKey(applicationContext)}/sendMessage")
                 .post(multipartBody)
                 .build()
-            client.newCall(request).enqueue( object: Callback {
+            client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     Log.e(TAG, "onFailure: ${e.message}")
                     sendError("onFailure: ${e.message}")
                 }
+
                 override fun onResponse(call: Call, response: Response) {
                 }
             })
@@ -167,6 +204,7 @@ class TelegramService : JobService() {
             e.message
         }
     }
+
     private fun sendPhoto(chatId: Long, key: String) {
         var app = SettingsUtil.loadSettings(key, applicationContext)
         var filename = "$key.jpg"
@@ -182,7 +220,7 @@ class TelegramService : JobService() {
 
             val multipartBody: MultipartBody = MultipartBody.Builder()
                 .setType(MultipartBody.FORM) // Header to show we are sending a Multipart Form Data
-            .addFormDataPart("photo", filename, fileBody) // file param
+                .addFormDataPart("photo", filename, fileBody) // file param
                 .addFormDataPart(
                     "chat_id",
                     "$chatId"
@@ -193,11 +231,12 @@ class TelegramService : JobService() {
                 .url("$baseUrl${SettingsUtil.loadTelegramKey(applicationContext)}/sendPhoto")
                 .post(multipartBody)
                 .build()
-            val response = client.newCall(request).enqueue( object: Callback {
+            val response = client.newCall(request).enqueue(object : Callback {
                 override fun onFailure(call: Call, e: IOException) {
                     Log.e(TAG, "onFailure: ${e.message}")
                     sendError("onFailure: ${e.message}")
                 }
+
                 override fun onResponse(call: Call, response: Response) {
                     Log.e(TAG, "onResponse: ${response}")
                 }

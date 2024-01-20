@@ -262,23 +262,17 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-            Thread.sleep(3000);
-
-        } catch (Exception e) {
-            System.out.println(" " + e.getMessage());
-            sendError(e.getMessage());
-        }
         AccessibilityNodeInfo weatherRootNode = getRootInActiveWindow();
-        AccessibilityNodeInfo today = findElementByText("android.widget.TextView", weatherRootNode, "Today", null);
+        AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", "Today", null, 3, 1);
         clickIsClicable(today);
-        try {
-            Thread.sleep(3000);
-        } catch (Exception e) {
-            System.out.println(" " + e.getMessage());
-            sendError(e.getMessage());
-        }
+            AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", null, "10 day", 3, 1);
+
         takeScreenshot(Display.DEFAULT_DISPLAY,
                 getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("weather.jpg", "weather", false));
+        } catch (Exception e) {
+            System.out.println(" " + e.getMessage());
+            sendError(e.getMessage());
+        }
     }
 
     private static void clickIsClicable(AccessibilityNodeInfo today) {
@@ -474,11 +468,13 @@ public class MyAccessibilityService extends AccessibilityService {
                         saveTempBitmap(filename, bitmap);//,getApplicationContext(),"WhatsappIntegration");
                         bitmap.isMutable();
                         settings.setTimeLastSucessfull(System.currentTimeMillis());
+                        startService(new Intent(getApplicationContext(), TelegramService.class).putExtra("key", timeSettingsName));
                     }
                 } else {
                     saveTempBitmap(filename, bitmap);//,getApplicationContext(),"WhatsappIntegration");
                     bitmap.isMutable();
                     settings.setTimeLastSucessfull(System.currentTimeMillis());
+                    startService(new Intent(getApplicationContext(), TelegramService.class).putExtra("key", timeSettingsName));
                 }
             } catch (Exception e1) {
                 sendError("error on decodeQRCode ad save" + e1.getMessage());
@@ -486,25 +482,31 @@ public class MyAccessibilityService extends AccessibilityService {
 
             settings.setTimeLast(System.currentTimeMillis());
             SettingsUtil.Companion.saveSettings(timeSettingsName, settings, getApplicationContext());
-            try {
-                Thread.sleep(3000);
-            } catch (Exception e) {
-                System.out.println(" " + e.getMessage());
-                sendError(e.getMessage());
+            for (int i=0;i<6;i++) {
+                try {
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                    System.out.println(" " + e.getMessage());
+                    sendError(e.getMessage());
+                }
             }
             performGlobalAction(GLOBAL_ACTION_BACK);
-            try {
-                Thread.sleep(3000);
-            } catch (Exception e) {
-                System.out.println(" " + e.getMessage());
-                sendError(e.getMessage());
+            for (int i=0;i<6;i++) {
+                try {
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                    System.out.println(" " + e.getMessage());
+                    sendError(e.getMessage());
+                }
             }
             performGlobalAction(GLOBAL_ACTION_HOME);
-            try {
-                Thread.sleep(3000);
-            } catch (Exception e) {
-                System.out.println(" " + e.getMessage());
-                sendError(e.getMessage());
+            for (int i=0;i<6;i++) {
+                try {
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                    System.out.println(" " + e.getMessage());
+                    sendError(e.getMessage());
+                }
             }
 
             Context context = getApplicationContext();
