@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -134,6 +135,60 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
+            handlerFindElementByText(handler, "android.widget.TextView", null, "₽", 7, 1,
+                    (t) -> {
+                        clickIsClicable(t);
+                        try {
+                            handlerFindElementByText(handler, "android.widget.TextView", null, "штрих", 7, 1,
+                                    (t2) -> {
+                                        takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
+                                        return null;
+                                    },
+                                    (t2) -> {//бывает не срабатывает открытие, пробуем еще раз
+                                        try {
+                                            handlerFindElementByText(handler, "android.widget.TextView", null, "₽", 7, 1,
+                                                    (t3) -> {
+                                                        try {
+                                                            handlerFindElementByText(handler, "android.widget.TextView", null, "штрих", 7, 1,
+                                                                    (t4) -> {
+                                                                        takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
+                                                                        return null;
+                                                                    }, null);
+                                                        } catch (InterruptedException e) {
+                                                            throw new RuntimeException(e);
+                                                        }
+                                                        return null;
+                                                    },
+                                                    (t3) -> {
+                                                        return null;
+                                                    });
+                                        } catch (InterruptedException e) {
+                                            throw new RuntimeException(e);
+                                        }
+                                        return null;
+                                    });
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+                        return null;
+                    }, (t) -> {
+                        //ничего не делаем если не нашли кнопку с рублем
+                        return null;
+                    });
+
+        } catch (Exception e) {
+            System.out.println(" " + e.getMessage());
+            sendError(e.getMessage());
+        }
+    }
+
+    private void performActionPyaterka2() {
+        try {
+            Context context = getApplicationContext();
+            Intent intent = context.getPackageManager().getLaunchIntentForPackage(pyaterka);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+
             AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", null, "₽", 7, 1);
             clickIsClicable(today);
 
@@ -144,8 +199,7 @@ public class MyAccessibilityService extends AccessibilityService {
             }
             today2 = waitAndFindElementByText("android.widget.TextView", null, "штрих", 7, 1);
             if (today2 != null) {
-                takeScreenshot(Display.DEFAULT_DISPLAY,
-                        getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
+                takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
             }
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
@@ -172,8 +226,7 @@ public class MyAccessibilityService extends AccessibilityService {
             clickIsClicable(today);
             today = waitAndFindElementByText("android.widget.TextView", null, "Обновить", 5, 1);
 
-            takeScreenshot(Display.DEFAULT_DISPLAY,
-                    getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+            takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
 
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
@@ -194,8 +247,7 @@ public class MyAccessibilityService extends AccessibilityService {
 
             AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", "Подробнее", null, 7, 1);
 
-            takeScreenshot(Display.DEFAULT_DISPLAY,
-                    getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("verniy.jpg", "verniy", true));
+            takeScreenshot(new MyTakeScreenshotCallback("verniy.jpg", "verniy", true));
 
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
@@ -216,8 +268,7 @@ public class MyAccessibilityService extends AccessibilityService {
 
             AccessibilityNodeInfo today2 = waitAndFindElementByText("android.widget.TextView", null, "Показать", 5, 1);
 
-            takeScreenshot(Display.DEFAULT_DISPLAY,
-                    getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("magnit.jpg", "magnit", true));
+            takeScreenshot(new MyTakeScreenshotCallback("magnit.jpg", "magnit", true));
 
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
@@ -237,8 +288,7 @@ public class MyAccessibilityService extends AccessibilityService {
                 clickIsClicable(today);
                 AccessibilityNodeInfo carta = waitAndFindElementByText("android.widget.TextView", null, "Ваша карта", 7, 1);
                 if (carta != null) {
-                    takeScreenshot(Display.DEFAULT_DISPLAY,
-                            getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
+                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
                     return;
                 }
             } else {
@@ -247,8 +297,7 @@ public class MyAccessibilityService extends AccessibilityService {
                 today = waitAndfindElementById("android.widget.ImageView", "ru.myauchan.droid:id/code_image_view", 7, 1);
                 ;
                 if (today != null) {//нашли кнопку
-                    takeScreenshot(Display.DEFAULT_DISPLAY,
-                            getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
+                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
                     return;
                 }
             }
@@ -269,11 +318,10 @@ public class MyAccessibilityService extends AccessibilityService {
             handlerFindElementByText(handler, "android.widget.TextView", "Today", null, 3, 1, (t) -> {
                 clickIsClicable(t);
                 handler.postDelayed(() -> {
-                    takeScreenshot(Display.DEFAULT_DISPLAY,
-                            getApplicationContext().getMainExecutor(), new MyTakeScreenshotCallback("weather.jpg", "weather", false));
+                    takeScreenshot(new MyTakeScreenshotCallback("weather.jpg", "weather", false));
                 }, 1000 * 3);
                 return null;
-            });
+            }, null);
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
             sendError(e.getMessage());
@@ -295,25 +343,30 @@ public class MyAccessibilityService extends AccessibilityService {
     private AccessibilityNodeInfo findButtonByText(AccessibilityNodeInfo nodeInfo, String text) {
         return findElementByText("android.widget.Button", nodeInfo, text, null);
     }
+
     Handler handler = new Handler(Looper.getMainLooper());
 
     private void handlerFindElementByText(Handler handler, String elementType, String equalText, String containText, int maxCount, int delayInSeconds,
-                                                           Function<AccessibilityNodeInfo, Void> supplier) throws InterruptedException {
-        if (maxCount-- > 0) {
-            int finalMaxCount = maxCount;
-            handler.postDelayed(() -> {
-                AccessibilityNodeInfo carta = findElementByText(elementType, getRootInActiveWindow(), equalText, containText);
-                if (carta == null) {
+                                          Function<AccessibilityNodeInfo, Void> supplier,
+                                          Function<AccessibilityNodeInfo, Void> supplierNull) throws InterruptedException {
+        int finalMaxCount = maxCount;
+        handler.postDelayed(() -> {
+            AccessibilityNodeInfo carta = findElementByText(elementType, getRootInActiveWindow(), equalText, containText);
+            if (carta == null) {
+                if (finalMaxCount > 0) {
                     try {
-                        handlerFindElementByText(handler, elementType, equalText, containText, finalMaxCount, delayInSeconds, supplier);
+                        handlerFindElementByText(handler, elementType, equalText, containText, finalMaxCount, delayInSeconds, supplier, supplierNull);
                     } catch (InterruptedException e) {
                         throw new RuntimeException(e);
                     }
                 } else {
-                    supplier.apply(carta);
+                    if (supplierNull != null) supplierNull.apply(carta);
                 }
-            }, 1000 * delayInSeconds);
-        }
+            } else {
+                if (supplier != null) supplier.apply(carta);
+            }
+        }, 1000 * delayInSeconds);
+
 //        Thread.sleep(1000);
 //        int counter = 0;
 //        AccessibilityNodeInfo carta = null;
@@ -571,5 +624,10 @@ public class MyAccessibilityService extends AccessibilityService {
         GestureDescription.Builder clickBuilder = new GestureDescription.Builder();
         clickBuilder.addStroke(clickStroke);
         return clickBuilder.build();
+    }
+
+    public void takeScreenshot(TakeScreenshotCallback callback) {
+        super.takeScreenshot(Display.DEFAULT_DISPLAY,
+                getApplicationContext().getMainExecutor(), callback);
     }
 }
