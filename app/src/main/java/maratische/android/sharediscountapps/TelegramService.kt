@@ -72,10 +72,18 @@ class TelegramService : JobService() {
             val requests = SettingsUtil.loadRequests(this)
             requests[message]?.let {
                 val chatId = it
-                sendPhoto(chatId, message)
+                sendPhoto(chatId, message, false)
                 requests.remove(message)
+                SettingsUtil.saveRequests(requests, this)
             }
-            SettingsUtil.saveRequests(requests,this)
+
+            val subscribers = SettingsUtil.loadSubscribers(this)
+            subscribers[message]?.let {
+                val listOfSubscribers = it
+                for (chatId in listOfSubscribers) {
+                    sendPhoto(chatId, message, true)
+                }
+            }
         }
         return super.onStartCommand(intent, flags, startId)
     }
@@ -138,31 +146,56 @@ class TelegramService : JobService() {
             }
             //process message
             var text = item.message?.text?.lowercase()
+            var commandSecond: String? = null
+            if (text?.contains(" ") == true) {
+                commandSecond = text?.substring(text.indexOf(" ") + 1)
+                text = text?.substring(0, text.indexOf(" "))
+            }
+            var commandFirst: String? = null
             if (text == "погода" || text == "/weather" || text == "/pogoda") {
-                sendPhoto(item.message?.chat?.id!!, "weather")
+                sendPhoto(item.message?.chat?.id!!, "weather", false)
+                commandFirst = "weather"
             } else if (text == "/auchan" || text == "auchan" || text == "ашан") {
-                sendPhoto(item.message?.chat?.id!!, "auchan")
+                sendPhoto(item.message?.chat?.id!!, "auchan", false)
+                commandFirst = "auchan"
             } else if (text == "/spar" || text == "spar" || text == "спар") {
-                sendPhoto(item.message?.chat?.id!!, "spar")
+                sendPhoto(item.message?.chat?.id!!, "spar", false)
+                commandFirst = "spar"
             } else if (text == "/magnit" || text == "magnit" || text == "магнит") {
-                sendPhoto(item.message?.chat?.id!!, "magnit")
-            } else if (text == "/verniy" || text == "verniy" || text == "верныйs") {
-                sendPhoto(item.message?.chat?.id!!, "verniy")
+                sendPhoto(item.message?.chat?.id!!, "magnit", false)
+                commandFirst = "magnit"
+            } else if (text == "/verniy" || text == "verniy" || text == "верный") {
+                sendPhoto(item.message?.chat?.id!!, "verniy", false)
+                commandFirst = "verniy"
             } else if (text == "/5ka" || text == "пятерочка" || text == "пятерка") {
-                sendPhoto(item.message?.chat?.id!!, "pyaterka")
+                sendPhoto(item.message?.chat?.id!!, "pyaterka", false)
+                commandFirst = "pyaterka"
             } else if (text == "/5ka_new") {
                 requestPhoto(item.message?.chat?.id!!, "pyaterka")
+                commandFirst = "pyaterka"
             } else {
                 sendMessage(item.message?.chat?.id!!, "hi! ${item.message?.text}")
+            }
+            if (commandFirst != null && commandSecond == "subscribe" || commandSecond == "подписка") {
+                subscribe(item.message?.chat?.id!!, commandFirst!!)
             }
             saveOffset(item.update_id, applicationContext)
         }
     }
 
+    private fun subscribe(chatId: Long, key: String) {
+        val requests = SettingsUtil.loadSubscribers(this)
+        if (requests[key] == null) {
+            requests[key] = HashSet()
+        }
+        requests[key]?.add(chatId)
+        SettingsUtil.saveSubscribers(requests, this)
+    }
+
     private fun requestPhoto(chatId: Long, key: String) {
         val requests = SettingsUtil.loadRequests(this)
         requests[key] = chatId
-        SettingsUtil.saveRequests(requests , this)
+        SettingsUtil.saveRequests(requests, this)
 
         var settingsStart = SettingsUtil.loadSettings("start", this)
         settingsStart.timeLast = 0
@@ -205,7 +238,7 @@ class TelegramService : JobService() {
         }
     }
 
-    private fun sendPhoto(chatId: Long, key: String) {
+    private fun sendPhoto(chatId: Long, key: String, disableNotification: Boolean) {
         var app = SettingsUtil.loadSettings(key, applicationContext)
         var filename = "$key.jpg"
         try {
@@ -221,6 +254,7 @@ class TelegramService : JobService() {
             val multipartBody: MultipartBody = MultipartBody.Builder()
                 .setType(MultipartBody.FORM) // Header to show we are sending a Multipart Form Data
                 .addFormDataPart("photo", filename, fileBody) // file param
+                .addFormDataPart("disable_notification", disableNotification.toString())
                 .addFormDataPart(
                     "chat_id",
                     "$chatId"

@@ -26,6 +26,24 @@ class SettingsUtil {
             }
         }
 
+        fun loadSubscribers(context: Context): HashMap<String, HashSet<Long>> {
+            try {
+                val json = context.getSharedPreferences("TAG", AppCompatActivity.MODE_PRIVATE)
+                    .getString("subscribers", "{}")
+
+                val type: Type = object : TypeToken<HashMap<String, HashSet<Long>>>() {}.type
+                val entity: HashMap<String, HashSet<Long>> = gson.fromJson(json, type)
+                return entity
+            } catch (e: Exception) {
+                return HashMap<String, HashSet<Long>>()
+            }
+        }
+
+        fun saveSubscribers(requests: HashMap<String, HashSet<Long>>, context: Context) {
+            val json = gson.toJson(requests)
+            context.getSharedPreferences("TAG", AppCompatActivity.MODE_PRIVATE).edit().putString("subscribers", json).commit()
+        }
+
         fun saveRequests(requests: HashMap<String, Long>, context: Context) {
             val json = gson.toJson(requests)
             context.getSharedPreferences("TAG", AppCompatActivity.MODE_PRIVATE).edit().putString("requests", json).commit()

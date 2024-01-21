@@ -25,12 +25,12 @@ class APP: Application() {
             notificationManager.createNotificationChannel(channel)
         }
         // Устанавливаем обработчик для всех неперехваченных исключений
-        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-            handleUncaughtException(thread, throwable)
-
-            // После обработки исключения, передаем управление стандартному обработчику
-            Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(thread, throwable)
-        }
+//        Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+//            handleUncaughtException(thread, throwable)
+//
+//             После обработки исключения, передаем управление стандартному обработчику
+//            Thread.getDefaultUncaughtExceptionHandler()?.uncaughtException(thread, throwable)
+//        }
     }
     private fun handleUncaughtException(thread: Thread, throwable: Throwable) {
         val myDir = applicationContext.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS)
