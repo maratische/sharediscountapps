@@ -92,31 +92,31 @@ public class MyAccessibilityService extends AccessibilityService {
 
 
         var pyaterka = SettingsUtil.Companion.loadSettings("pyaterka", getApplicationContext());
-        if (pyaterka.getActive() && pyaterka.getTimeLast() + 1000 * 60 * 60 * 12 < System.currentTimeMillis()) {
+        if (pyaterka.getActive() && pyaterka.getTimeLast() + 1000 * 60 * 60 * 24 < System.currentTimeMillis()) {
             performActionPyaterka();
             return;
         }
 
         var spar = SettingsUtil.Companion.loadSettings("spar", getApplicationContext());
-        if (spar.getActive() && spar.getTimeLast() + 1000 * 60 * 60 * 12 < System.currentTimeMillis()) {
+        if (spar.getActive() && spar.getTimeLast() + 1000 * 60 * 60 * 24 < System.currentTimeMillis()) {
             performActionSpar();
             return;
         }
 
         var verniy = SettingsUtil.Companion.loadSettings("verniy", getApplicationContext());
-        if (verniy.getActive() && verniy.getTimeLast() + 1000 * 60 * 60 * 12 < System.currentTimeMillis()) {
+        if (verniy.getActive() && verniy.getTimeLast() + 1000 * 60 * 60 * 24 < System.currentTimeMillis()) {
             performActionVerniy();
             return;
         }
 
         var magnit = SettingsUtil.Companion.loadSettings("magnit", getApplicationContext());
-        if (magnit.getActive() && magnit.getTimeLast() + 1000 * 60 * 60 * 12 < System.currentTimeMillis()) {
+        if (magnit.getActive() && magnit.getTimeLast() + 1000 * 60 * 60 * 24 < System.currentTimeMillis()) {
             performActionMagnit();
             return;
         }
 
         var auchan = SettingsUtil.Companion.loadSettings("auchan", getApplicationContext());
-        if (auchan.getActive() && auchan.getTimeLast() + 1000 * 60 * 60 * 12 < System.currentTimeMillis()) {
+        if (auchan.getActive() && auchan.getTimeLast() + 1000 * 60 * 60 * 24 < System.currentTimeMillis()) {
             performActionAuchan();
             return;
         }

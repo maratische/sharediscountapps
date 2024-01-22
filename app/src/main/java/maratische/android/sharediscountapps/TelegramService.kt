@@ -36,7 +36,23 @@ class TelegramService : JobService() {
     private val TAG = "TelegramService"
     private var client = OkHttpClient()
     var gson = Gson()
-    private var baseUrl = "https://api.telegram.org/bot"
+    private val baseUrl = "https://api.telegram.org/bot"
+    private val replyMarkup = "{\"keyboard\":[[" +
+            "{\"text\":\"/pogoda\",\"callback_data\":\"/5ka\",\"hide\":false}," +
+            "{\"text\":\"/help\",\"hide\":false}" +
+            "],[" +
+            "{\"text\":\"/5ka\",\"callback_data\":\"/5ka\",\"hide\":false}," +
+            "{\"text\":\"/5ka_new\",\"hide\":false}" +
+            "],[" +
+            "{\"text\":\"/spar\",\"hide\":false}," +
+            "{\"text\":\"/magnit\",\"hide\":false}," +
+            "{\"text\":\"/auchan\",\"hide\":false}," +
+            "{\"text\":\"/verniy\",\"hide\":false}"  +
+            "]]}"
+    private val help = "нажатие на кнопку с названием магазина - возвращает текущий код для магазина\n" +
+            "если послать комманду '/5ka subscribe' - подписка на код, при генерации нового кода он будет сразу присылаться в телеграм в беззвучном режиме\n" +
+            "'/5ka unsubscribe' - отписка\n" +
+            "'/5ka_new' - запускается генерация нового кода и как только будет получен - он высылается"
 
     companion object {
         val JSON: MediaType = "application/json".toMediaType()
@@ -152,7 +168,9 @@ class TelegramService : JobService() {
                 text = text?.substring(0, text.indexOf(" "))
             }
             var commandFirst: String? = null
-            if (text == "погода" || text == "/weather" || text == "/pogoda") {
+            if (text == "/help") {
+                sendMessage(item.message?.chat?.id!!, help)
+            } else if (text == "погода" || text == "/weather" || text == "/pogoda") {
                 sendPhoto(item.message?.chat?.id!!, "weather", false)
                 commandFirst = "weather"
             } else if (text == "/auchan" || text == "auchan" || text == "ашан") {
@@ -179,6 +197,9 @@ class TelegramService : JobService() {
             if (commandFirst != null && commandSecond == "subscribe" || commandSecond == "подписка") {
                 subscribe(item.message?.chat?.id!!, commandFirst!!)
             }
+            if (commandFirst != null && commandSecond == "unsubscribe" || commandSecond == "отподписка") {
+                unsubscribe(item.message?.chat?.id!!, commandFirst!!)
+            }
             saveOffset(item.update_id, applicationContext)
         }
     }
@@ -189,6 +210,17 @@ class TelegramService : JobService() {
             requests[key] = HashSet()
         }
         requests[key]?.add(chatId)
+        SettingsUtil.saveSubscribers(requests, this)
+    }
+
+    private fun unsubscribe(chatId: Long, key: String) {
+        val requests = SettingsUtil.loadSubscribers(this)
+        if (requests[key] == null) {
+            requests[key] = HashSet()
+        }
+        var element = requests[key]!!
+        element.remove(chatId)
+        requests[key] = element
         SettingsUtil.saveSubscribers(requests, this)
     }
 
@@ -218,6 +250,7 @@ class TelegramService : JobService() {
                     "text",
                     "$text"
                 ) // other string params can be like userId, name or something
+                .addFormDataPart("reply_markup", replyMarkup)
                 .build()
             val request: Request = Request.Builder()
                 .url("$baseUrl${SettingsUtil.loadTelegramKey(applicationContext)}/sendMessage")
@@ -260,6 +293,8 @@ class TelegramService : JobService() {
                     "$chatId"
                 ) // other string params can be like userId, name or something
                 .addFormDataPart("caption", "$key ${formatTimeFromLong(app.timeLastSucessfull)}")
+//                .addFormDataPart("reply_markup", "{\"inline_keyboard\":[[{\"text\":\"test button\",\"callback_data\":\"test\",\"hide\":false}]]}")
+                .addFormDataPart("reply_markup", replyMarkup)
                 .build()
             val request: Request = Request.Builder()
                 .url("$baseUrl${SettingsUtil.loadTelegramKey(applicationContext)}/sendPhoto")
