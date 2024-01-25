@@ -34,7 +34,7 @@ class ErrorService : Service() {
             try {
                 var time = System.currentTimeMillis()
                 val out = BufferedWriter(FileWriter(file,true))
-                out.write("$time;${message}")
+                out.write("$time;${message}\n")
                 out.flush()
                 out.close()
             } catch (e: Exception) {

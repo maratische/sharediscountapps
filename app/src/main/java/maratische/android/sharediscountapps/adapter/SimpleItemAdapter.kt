@@ -5,12 +5,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import maratische.android.sharediscountapps.model.ErrorItem
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-class SimpleItemAdapter(private val items: ArrayList<String>) :
+class SimpleItemAdapter(private val items: ArrayList<ErrorItem>) :
     RecyclerView.Adapter<SimpleItemAdapter.SimpleItemViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SimpleItemViewHolder {
@@ -25,7 +26,7 @@ class SimpleItemAdapter(private val items: ArrayList<String>) :
 
     override fun getItemCount(): Int = items.size
 
-    fun setItems(items: List<String>) {
+    fun setItems(items: List<ErrorItem>) {
         this.items.clear()
         this.items.addAll(items)
         notifyDataSetChanged()
@@ -39,21 +40,19 @@ class SimpleItemAdapter(private val items: ArrayList<String>) :
 
         fun formatTimeFromLong(timeInMillis: Long): String = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeInMillis), ZoneId.systemDefault()).format(formatter)
 
-        fun bind(item: String) {
+        fun bind(item: ErrorItem) {
             textView.text = parseError(item)
         }
 
-        private fun parseError(item: String) : String {
+        private fun parseError(item: ErrorItem) : String {
             try {
-                if (item.contains(";")) {
-                    val date = formatTimeFromLong(item.substring(0, item.indexOf(";")).toLong())
-                    val text = item.substring(item.indexOf(";")+1)
+                    val date = formatTimeFromLong(item.date)
+                    val text = item.message
                     return "$date $text"
-                }
             } catch (e: Exception) {
                 ;
             }
-            return item
+            return ""
         }
     }
 }

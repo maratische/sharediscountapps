@@ -8,7 +8,10 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import com.google.gson.Gson
 import maratische.android.sharediscountapps.SettingsUtil.Companion.loadOffset
 import maratische.android.sharediscountapps.SettingsUtil.Companion.saveOffset
@@ -47,12 +50,13 @@ class TelegramService : JobService() {
             "{\"text\":\"/spar\",\"hide\":false}," +
             "{\"text\":\"/magnit\",\"hide\":false}," +
             "{\"text\":\"/auchan\",\"hide\":false}," +
-            "{\"text\":\"/verniy\",\"hide\":false}"  +
+            "{\"text\":\"/verniy\",\"hide\":false}" +
             "]]}"
-    private val help = "нажатие на кнопку с названием магазина - возвращает текущий код для магазина\n" +
-            "если послать комманду '/5ka subscribe' - подписка на код, при генерации нового кода он будет сразу присылаться в телеграм в беззвучном режиме\n" +
-            "'/5ka unsubscribe' - отписка\n" +
-            "'/5ka_new' - запускается генерация нового кода и как только будет получен - он высылается"
+    private val help =
+        "нажатие на кнопку с названием магазина - возвращает текущий код для магазина\n" +
+                "если послать комманду '/5ka subscribe' - подписка на код, при генерации нового кода он будет сразу присылаться в телеграм в беззвучном режиме\n" +
+                "'/5ka unsubscribe' - отписка\n" +
+                "'/5ka_new' - запускается генерация нового кода и как только будет получен - он высылается"
 
     companion object {
         val JSON: MediaType = "application/json".toMediaType()
@@ -162,6 +166,13 @@ class TelegramService : JobService() {
             }
             //process message
             var text = item.message?.text?.lowercase()
+            Handler(Looper.getMainLooper()).post(Runnable {
+                Toast.makeText(
+                    this@TelegramService.applicationContext,
+                    text,
+                    Toast.LENGTH_LONG
+                ).show()
+            })
             var commandSecond: String? = null
             if (text?.contains(" ") == true) {
                 commandSecond = text?.substring(text.indexOf(" ") + 1)
@@ -194,6 +205,7 @@ class TelegramService : JobService() {
             } else {
                 sendMessage(item.message?.chat?.id!!, "hi! ${item.message?.text}")
             }
+
             if (commandFirst != null && commandSecond == "subscribe" || commandSecond == "подписка") {
                 subscribe(item.message?.chat?.id!!, commandFirst!!)
             }

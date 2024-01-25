@@ -18,6 +18,7 @@ import maratische.android.sharediscountapps.adapter.AppItemAdapter
 import maratische.android.sharediscountapps.adapter.AppUserAdapter
 import maratische.android.sharediscountapps.adapter.SimpleItemAdapter
 import maratische.android.sharediscountapps.model.AppItem
+import maratische.android.sharediscountapps.model.ErrorItem
 import java.io.BufferedReader
 import java.io.File
 import java.io.FileReader
@@ -25,6 +26,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.stream.Collectors
 
 
 class MainActivity4 : AppCompatActivity() {
@@ -122,10 +124,13 @@ class MainActivity4 : AppCompatActivity() {
             try {
                 var time = System.currentTimeMillis()
                 val out = BufferedReader(FileReader(file))
-                val errors = out.readLines().filter {
-                    (it.contains(";") && it.substring(0, it.indexOf(";"))
-                        .toLong() > System.currentTimeMillis() - 1000 * 60 * 60 * 24)
-                }.toList()
+                val errors = out.readLines().map { ErrorItem(it) }
+                    .filter { it.date > System.currentTimeMillis() - 1000 * 60 * 60 * 24 }
+//                    .sortedBy { it.date }
+                    .groupBy { it.message }
+                    .map { (key,value) -> value.maxByOrNull { it.date }!!}
+                    .sortedByDescending { it.date }
+                    .toList()
                 (recyclerView.adapter as SimpleItemAdapter).setItems(errors)
                 out.close()
             } catch (e: Exception) {
