@@ -41,16 +41,36 @@ class TelegramService : JobService() {
     var gson = Gson()
     private val baseUrl = "https://api.telegram.org/bot"
     private val replyMarkup = "{\"keyboard\":[[" +
-            "{\"text\":\"/pogoda\",\"callback_data\":\"/5ka\",\"hide\":false}," +
+            "{\"text\":\"/cards\",\"callback_data\":\"/cards\",\"hide\":false}," +
+            "{\"text\":\"/cards_new\",\"hide\":false}" +
+            "],[" +
+            "{\"text\":\"/podpiska\",\"callback_data\":\"/5ka\",\"podpiska\":false}," +
             "{\"text\":\"/help\",\"hide\":false}" +
-            "],[" +
+            "]]}"
+    private val replyMarkupCards = "{\"keyboard\":[[" +
             "{\"text\":\"/5ka\",\"callback_data\":\"/5ka\",\"hide\":false}," +
-            "{\"text\":\"/5ka_new\",\"hide\":false}" +
-            "],[" +
             "{\"text\":\"/spar\",\"hide\":false}," +
-            "{\"text\":\"/magnit\",\"hide\":false}," +
+            "{\"text\":\"/magnit\",\"hide\":false}" +
+            "],[" +
             "{\"text\":\"/auchan\",\"hide\":false}," +
-            "{\"text\":\"/verniy\",\"hide\":false}" +
+            "{\"text\":\"/verniy\",\"hide\":false}," +
+            "{\"text\":\"/pogoda\",\"callback_data\":\"/pogoda\",\"hide\":false}" +
+            "]]}"
+    private val replyMarkupCardsNew = "{\"keyboard\":[[" +
+            "{\"text\":\"/5ka_new\",\"callback_data\":\"/5ka_new\",\"hide\":false}," +
+            "{\"text\":\"/spar_new\",\"hide\":false}," +
+            "{\"text\":\"/magnit_new\",\"hide\":false}" +
+            "],[" +
+            "{\"text\":\"/auchan_new\",\"hide\":false}," +
+            "{\"text\":\"/verniy_new\",\"hide\":false}" +
+            "]]}"
+    private val replyMarkupPodpiska = "{\"keyboard\":[[" +
+            "{\"text\":\"/5ka pyaterkasubscribe\",\"callback_data\":\"/5ka subscribe\",\"hide\":false}," +
+            "{\"text\":\"/spar sparsubscribe\",\"hide\":false}," +
+            "{\"text\":\"/magnit magnitsubscribe\",\"hide\":false}" +
+            "],[" +
+            "{\"text\":\"/auchan auchansubscribe\",\"hide\":false}," +
+            "{\"text\":\"/verniy verniysubscribe\",\"hide\":false}" +
             "]]}"
     private val help =
         "нажатие на кнопку с названием магазина - возвращает текущий код для магазина\n" +
@@ -90,19 +110,21 @@ class TelegramService : JobService() {
         val message = intent?.getStringExtra("key")
         if (message != null) {
             val requests = SettingsUtil.loadRequests(this)
-            requests[message]?.let {
-                val chatId = it
-                sendPhoto(chatId, message, false)
-                requests.remove(message)
-                SettingsUtil.saveRequests(requests, this)
-            }
-
             val subscribers = SettingsUtil.loadSubscribers(this)
             subscribers[message]?.let {
                 val listOfSubscribers = it
                 for (chatId in listOfSubscribers) {
                     sendPhoto(chatId, message, true)
+                    if (chatId == requests[message]) {
+                        requests.remove(message)
+                    }
                 }
+            }
+            requests[message]?.let {
+                val chatId = it
+                sendPhoto(chatId, message, false)
+                requests.remove(message)
+                SettingsUtil.saveRequests(requests, this)
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -199,9 +221,35 @@ class TelegramService : JobService() {
             } else if (text == "/5ka" || text == "пятерочка" || text == "пятерка") {
                 sendPhoto(item.message?.chat?.id!!, "pyaterka", false)
                 commandFirst = "pyaterka"
+
+            } else if (text == "/auchan_new") {
+                requestPhoto(item.message?.chat?.id!!, "auchan")
+                commandFirst = "auchan"
+            } else if (text == "/spar_new") {
+                requestPhoto(item.message?.chat?.id!!, "spar")
+                commandFirst = "spar"
+            } else if (text == "/magnit_new") {
+                requestPhoto(item.message?.chat?.id!!, "magnit")
+                commandFirst = "magnit"
+            } else if (text == "/verniy_new") {
+                requestPhoto(item.message?.chat?.id!!, "verniy")
+                commandFirst = "verniy"
             } else if (text == "/5ka_new") {
                 requestPhoto(item.message?.chat?.id!!, "pyaterka")
                 commandFirst = "pyaterka"
+            } else if (text == "/cards") {
+                sendMessage(item.message?.chat?.id!!, "cards", replyMarkupCards)
+            } else if (text == "/cards_new") {
+                sendMessage(item.message?.chat?.id!!, "cards", replyMarkupCardsNew)
+            } else if (text == "/podpiska") {
+                val subscribers = SettingsUtil.loadSubscribers(this)
+                var reply = replyMarkupPodpiska
+                reply = subscribeUnsubscribe(subscribers, "auchan", item, reply)
+                reply = subscribeUnsubscribe(subscribers, "spar", item, reply)
+                reply = subscribeUnsubscribe(subscribers, "magnit", item, reply)
+                reply = subscribeUnsubscribe(subscribers, "verniy", item, reply)
+                reply = subscribeUnsubscribe(subscribers, "pyaterka", item, reply)
+                sendMessage(item.message?.chat?.id!!, "podpiska", reply)
             } else {
                 sendMessage(item.message?.chat?.id!!, "hi! ${item.message?.text}")
             }
@@ -214,6 +262,21 @@ class TelegramService : JobService() {
             }
             saveOffset(item.update_id, applicationContext)
         }
+    }
+
+    private fun subscribeUnsubscribe(
+        subscribers: HashMap<String, HashSet<Long>>,
+        name: String,
+        item: GetUpdatesItem,
+        reply: String
+    ): String {
+        var reply1 = reply
+        if (subscribers[name]?.contains(item.message?.chat?.id!!) == true) {
+            reply1 = reply1.replace("${name}subscribe", "unsubscribe");
+        } else {
+            reply1 = reply1.replace("${name}subscribe", "subscribe");
+        }
+        return reply1
     }
 
     private fun subscribe(chatId: Long, key: String) {
@@ -250,7 +313,7 @@ class TelegramService : JobService() {
         sendBroadcast(Intent(MainActivity4.UPDATE_UI))
     }
 
-    private fun sendMessage(chatId: Long, text: String) {
+    private fun sendMessage(chatId: Long, text: String, markup: String = replyMarkup) {
         try {
             val multipartBody: MultipartBody = MultipartBody.Builder()
                 .setType(MultipartBody.FORM) // Header to show we are sending a Multipart Form Data
@@ -262,7 +325,7 @@ class TelegramService : JobService() {
                     "text",
                     "$text"
                 ) // other string params can be like userId, name or something
-                .addFormDataPart("reply_markup", replyMarkup)
+                .addFormDataPart("reply_markup", markup)
                 .build()
             val request: Request = Request.Builder()
                 .url("$baseUrl${SettingsUtil.loadTelegramKey(applicationContext)}/sendMessage")
@@ -275,6 +338,7 @@ class TelegramService : JobService() {
                 }
 
                 override fun onResponse(call: Call, response: Response) {
+                    Log.e(TAG, "onResponse")
                 }
             })
         } catch (e: Exception) {

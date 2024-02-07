@@ -50,19 +50,19 @@ public class MyAccessibilityService extends AccessibilityService {
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
-        // Получаем корневой узел AccessibilityNodeInfo для текущего события
         AccessibilityNodeInfo rootNode = getRootInActiveWindow();
 
-        // Выполняем действия, например, находим и кликаем по кнопке с текстом "OK"
-        performAction(rootNode);
+        try {
+            performAction(rootNode);
+        } catch (Exception e) {
+            sendError("performAction " + e.getMessage());
+        }
     }
 
     @Override
     public void onInterrupt() {
-        // Вызывается при прерывании сервиса доступности
     }
 
-    // Метод для поиска EditText по идентификатору
     private AccessibilityNodeInfo findEditTextById(AccessibilityNodeInfo source, String editTextId) {
         if (source == null) {
             return null;
@@ -177,29 +177,35 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-            handlerFindElementByText(handler, "android.widget.TextView", null, "бонус", 5, 1, (t) -> {
-                clickIsClicable(t);
-                handlerFindElementByText(handler, "android.widget.TextView", null, "Обновить", 5, 1, (t2) -> {
-                    takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
-                    return null;
-                }, (t2) -> {
-                    takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
-                    return null;
-                });
+            handlerFindElementByText(handler, "android.widget.TextView", null, "Обновить", 5, 1, (t0) -> {
+                takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
                 return null;
-            }, (t) -> {
-                performGlobalAction(GLOBAL_ACTION_BACK);
-                handlerFindElementByText(handler, "android.widget.TextView", null, "бонус", 5, 1, (t3) -> {
-                    clickIsClicable(t3);
-                    handlerFindElementByText(handler, "android.widget.TextView", null, "Обновить", 5, 1, (t4) -> {
+            }, (t0) -> {
+                handlerFindElementByText(handler, "android.widget.TextView", null, "бонус", 5, 1, (t) -> {
+                    clickIsClicable(t);
+                    handlerFindElementByText(handler, "android.widget.TextView", null, "Обновить", 5, 1, (t2) -> {
                         takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
                         return null;
-                    }, (t4) -> {
+                    }, (t2) -> {
                         takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
                         return null;
                     });
                     return null;
-                }, null);
+                }, (t) -> {
+                    performGlobalAction(GLOBAL_ACTION_BACK);
+                    handlerFindElementByText(handler, "android.widget.TextView", null, "бонус", 5, 1, (t3) -> {
+                        clickIsClicable(t3);
+                        handlerFindElementByText(handler, "android.widget.TextView", null, "Обновить", 5, 1, (t4) -> {
+                            takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+                            return null;
+                        }, (t4) -> {
+                            takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+                            return null;
+                        });
+                        return null;
+                    }, null);
+                    return null;
+                });
                 return null;
             });
 //            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", null, "бонус", 5, 1);
@@ -321,15 +327,19 @@ public class MyAccessibilityService extends AccessibilityService {
         }
     }
 
-    private static void clickIsClicable(AccessibilityNodeInfo today) {
-        if (today != null) {
-            for (int i = 0; i < 5; i++) {
-                if (today.isClickable()) {
-                    today.performAction(AccessibilityNodeInfo.ACTION_CLICK);
-                    break;
+    private void clickIsClicable(AccessibilityNodeInfo today) {
+        try {
+            if (today != null) {
+                for (int i = 0; i < 5; i++) {
+                    if (today.isClickable()) {
+                        today.performAction(AccessibilityNodeInfo.ACTION_CLICK);
+                        break;
+                    }
+                    today = today.getParent();
                 }
-                today = today.getParent();
             }
+        } catch (Exception e) {
+            sendError(e.getMessage());
         }
     }
 

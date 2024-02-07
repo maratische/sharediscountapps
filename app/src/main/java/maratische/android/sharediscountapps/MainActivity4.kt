@@ -6,12 +6,17 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
+import android.view.MotionEvent
 import android.widget.Button
 import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import maratische.android.sharediscountapps.MyAccessibilityService.MyTakeScreenshotCallback
 import maratische.android.sharediscountapps.SettingsUtil.Companion.saveOffset
 import maratische.android.sharediscountapps.SettingsUtil.Companion.saveTelegramKey
 import maratische.android.sharediscountapps.adapter.AppItemAdapter
@@ -26,7 +31,6 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.stream.Collectors
 
 
 class MainActivity4 : AppCompatActivity() {
@@ -70,6 +74,7 @@ class MainActivity4 : AppCompatActivity() {
 
         var buttonStart = findViewById<Button>(R.id.buttonStart)
         buttonStart.setOnClickListener {
+            userActivity()
             buttonStart.text = if (startStop) {
                 "Ping"
             } else {
@@ -85,6 +90,7 @@ class MainActivity4 : AppCompatActivity() {
         telegramOffset.setText(SettingsUtil.loadOffset(applicationContext).toString())
         var buttonSettings = findViewById<Button>(R.id.buttonSettings)
         buttonSettings.setOnClickListener {
+            userActivity()
             try {
                 saveOffset(telegramOffset.text.toString().toLong(), applicationContext)
             } catch (e: NumberFormatException) {
@@ -99,6 +105,16 @@ class MainActivity4 : AppCompatActivity() {
         }
         TelegramService.scheduleJob(this);
 
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        userActivity()
+        return super.onTouchEvent(event)
+    }
+
+    private fun userActivity() {
+        setCurrentBrightness()
+        setZeroBrightness()
     }
 
     private fun updateUi() {
@@ -128,7 +144,7 @@ class MainActivity4 : AppCompatActivity() {
                     .filter { it.date > System.currentTimeMillis() - 1000 * 60 * 60 * 24 }
 //                    .sortedBy { it.date }
                     .groupBy { it.message }
-                    .map { (key,value) -> value.maxByOrNull { it.date }!!}
+                    .map { (key, value) -> value.maxByOrNull { it.date }!! }
                     .sortedByDescending { it.date }
                     .toList()
                 (recyclerView.adapter as SimpleItemAdapter).setItems(errors)
@@ -151,15 +167,61 @@ class MainActivity4 : AppCompatActivity() {
         LocalDateTime.ofInstant(Instant.ofEpochMilli(timeInMillis), ZoneId.systemDefault())
             .format(formatter)
 
+    var currentBrightness: Int = 0;
+    var handler = Handler(Looper.getMainLooper())
+
+    @Volatile
+    var timeOfActivity: Long = 0;
+
     override fun onStart() {
         super.onStart()
         registerBroadCastReceiver()
         updateUi()
+        // Получение текущей яркости
+        // Получение текущей яркости
+        val britghtness = Settings.System.getInt(
+            contentResolver,
+            Settings.System.SCREEN_BRIGHTNESS
+        )
+        if (britghtness > 0) {
+            currentBrightness = britghtness
+        }
+        setZeroBrightness()
+    }
+
+    fun setZeroBrightness() {
+        timeOfActivity = System.currentTimeMillis() + 3000 - 100;
+        var h = handler.postDelayed(Runnable {
+            if (timeOfActivity < System.currentTimeMillis()) {
+                try {
+                Settings.System.putInt(
+                    getContentResolver(),
+                    Settings.System.SCREEN_BRIGHTNESS,
+                    0
+                );
+                } catch (e : Exception) {
+                    ;
+                }
+            }
+        }, 3000)
+    }
+
+    fun setCurrentBrightness() {
+        try {
+            Settings.System.putInt(
+                getContentResolver(),
+                Settings.System.SCREEN_BRIGHTNESS,
+                currentBrightness
+            );
+        } catch (e : Exception) {
+            ;
+        }
     }
 
     override fun onStop() {
         super.onStop()
         unRegisterBroadCastReceiver()
+        setCurrentBrightness();
     }
 
     private fun registerBroadCastReceiver() {
