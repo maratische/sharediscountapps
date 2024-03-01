@@ -135,18 +135,18 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-            handlerFindElementByText(handler, "android.widget.TextView", null, "₽", 7, 1,
+            handlerFindElementByText(handler, "android.widget.TextView", null, "₽", 10, 1,
                     (t) -> {
                         clickIsClicable(t);
-                        handlerFindElementByText(handler, "android.widget.TextView", null, "штрих", 7, 1,
+                        handlerFindElementByText(handler, "android.widget.TextView", null, "штрих", 10, 1,
                                 (t2) -> {
                                     takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
                                     return null;
                                 },
                                 (t2) -> {//бывает не срабатывает открытие, пробуем еще раз
-                                    handlerFindElementByText(handler, "android.widget.TextView", null, "₽", 7, 1,
+                                    handlerFindElementByText(handler, "android.widget.TextView", null, "₽", 10, 1,
                                             (t3) -> {
-                                                handlerFindElementByText(handler, "android.widget.TextView", null, "штрих", 7, 1,
+                                                handlerFindElementByText(handler, "android.widget.TextView", null, "штрих", 10, 1,
                                                         (t4) -> {
                                                             takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
                                                             return null;

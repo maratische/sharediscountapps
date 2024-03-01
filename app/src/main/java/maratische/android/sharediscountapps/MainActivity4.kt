@@ -1,6 +1,7 @@
 package maratische.android.sharediscountapps
 
 import android.content.BroadcastReceiver
+import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -16,7 +17,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import maratische.android.sharediscountapps.MyAccessibilityService.MyTakeScreenshotCallback
 import maratische.android.sharediscountapps.SettingsUtil.Companion.saveOffset
 import maratische.android.sharediscountapps.SettingsUtil.Companion.saveTelegramKey
 import maratische.android.sharediscountapps.adapter.AppItemAdapter
@@ -178,7 +178,6 @@ class MainActivity4 : AppCompatActivity() {
         registerBroadCastReceiver()
         updateUi()
         // Получение текущей яркости
-        // Получение текущей яркости
         val britghtness = Settings.System.getInt(
             contentResolver,
             Settings.System.SCREEN_BRIGHTNESS
@@ -189,33 +188,54 @@ class MainActivity4 : AppCompatActivity() {
         setZeroBrightness()
     }
 
+    var screenSaverTask: ScreenSaverTask? = null
     fun setZeroBrightness() {
         timeOfActivity = System.currentTimeMillis() + 3000 - 100;
-        var h = handler.postDelayed(Runnable {
-            if (timeOfActivity < System.currentTimeMillis()) {
+        screenSaverTask?.let { it.cancel() }
+        screenSaverTask = ScreenSaverTask(timeOfActivity, contentResolver)
+        var h = handler.postDelayed(screenSaverTask!!, 3000)
+
+    }
+
+    class ScreenSaverTask(var timeOfActivity: Long, var contentResolver: ContentResolver) : Runnable {
+        var isCancel = false
+
+        fun cancel() {
+            isCancel = true
+        }
+        override fun run() {
+            if (!isCancel && timeOfActivity < System.currentTimeMillis()) {
                 try {
-                Settings.System.putInt(
-                    getContentResolver(),
-                    Settings.System.SCREEN_BRIGHTNESS,
-                    0
-                );
+                    Settings.System.putInt(
+                        contentResolver,
+                        Settings.System.SCREEN_BRIGHTNESS,
+                        0
+                    );
                 } catch (e : Exception) {
                     ;
                 }
             }
-        }, 3000)
+        }
+
     }
 
     fun setCurrentBrightness() {
         try {
-            Settings.System.putInt(
-                getContentResolver(),
-                Settings.System.SCREEN_BRIGHTNESS,
-                currentBrightness
-            );
+            val britghtness = Settings.System.getInt(
+                contentResolver,
+                Settings.System.SCREEN_BRIGHTNESS
+            )
+            if (britghtness <  currentBrightness) {
+                Settings.System.putInt(
+                    getContentResolver(),
+                    Settings.System.SCREEN_BRIGHTNESS,
+                    currentBrightness
+                );
+            }
         } catch (e : Exception) {
             ;
         }
+        screenSaverTask?.let { it.cancel() }
     }
 
     override fun onStop() {
