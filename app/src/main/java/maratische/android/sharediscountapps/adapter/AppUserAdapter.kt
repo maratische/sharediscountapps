@@ -40,22 +40,24 @@ class AppUserAdapter(private val items: ArrayList<AppTelegramUser>) :
         private val textView: TextView = itemView.findViewById(R.id.text1)
         private val timeView: TextView = itemView.findViewById(R.id.time)
         private val checkboxActive: CheckBox = itemView.findViewById(R.id.checkbox_active)
+        private val checkboxAdmin: CheckBox = itemView.findViewById(R.id.checkbox_admin)
         private var checkedChangeListener: OnCheckedChangeListener? = null
+        private var checkedAdminListener: OnAdminChangeListener? = null
 
 
         fun bind(item: AppTelegramUser) {
             textView.text = item.username
             timeView.text = TimeUtil.formatTimeFromLong(item.timeLast)
             checkedChangeListener?.setProgrammaticChange(true)
+            checkedAdminListener?.setProgrammaticChange(true)
             checkboxActive.isChecked = item.approved
+            checkboxAdmin.isChecked = item.admin
             checkedChangeListener?.setProgrammaticChange(false)
             checkedChangeListener = OnCheckedChangeListener(item)
+            checkedAdminListener?.setProgrammaticChange(false)
+            checkedAdminListener = OnAdminChangeListener(item)
             checkboxActive.setOnCheckedChangeListener(checkedChangeListener)
-//            checkboxActive.setOnCheckedChangeListener { _, isChecked ->
-//                var settings = SettingsUtil.loadSettings(item.key, itemView.context)
-//                settings.active = isChecked
-//                SettingsUtil.saveSettings(item.key, settings, itemView.context)
-//            }
+            checkboxAdmin.setOnCheckedChangeListener(checkedAdminListener)
         }
     }
 
@@ -69,6 +71,22 @@ class AppUserAdapter(private val items: ArrayList<AppTelegramUser>) :
                 var userSettings = SettingsUtil.loadAppTelegramUsers(buttonView!!.context)
                 userSettings.users.filter { it.username == item.username }.forEach {
                     it.approved = isChecked
+                }
+                SettingsUtil.saveAppTelegramUsers(userSettings, buttonView!!.context)
+            }
+        }
+
+    }
+    class OnAdminChangeListener(private var item: AppTelegramUser): CompoundButton.OnCheckedChangeListener {
+        private var isProgrammaticChange = false
+        fun setProgrammaticChange(isProgrammaticChange: Boolean) {
+            this.isProgrammaticChange = isProgrammaticChange
+        }
+        override fun onCheckedChanged(buttonView: CompoundButton?, isChecked: Boolean) {
+            if (!isProgrammaticChange) {
+                var userSettings = SettingsUtil.loadAppTelegramUsers(buttonView!!.context)
+                userSettings.users.filter { it.username == item.username }.forEach {
+                    it.admin = isChecked
                 }
                 SettingsUtil.saveAppTelegramUsers(userSettings, buttonView!!.context)
             }

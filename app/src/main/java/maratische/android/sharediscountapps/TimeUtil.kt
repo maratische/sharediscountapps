@@ -11,7 +11,11 @@ class TimeUtil {
         // Определение форматтера даты и времени
         private val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MM-dd HH:mm:ss")
 
-        fun formatTimeFromLong(timeInMillis: Long): String = LocalDateTime.ofInstant(Instant.ofEpochMilli(timeInMillis), ZoneId.systemDefault()).format(formatter)
+        fun formatTimeFromLong(timeInMillis: Long): String = if (timeInMillis > 0) {
+            LocalDateTime.ofInstant(Instant.ofEpochMilli(timeInMillis), ZoneId.systemDefault()).format(formatter)
+        } else {
+            " "
+        }
 
     }
 }

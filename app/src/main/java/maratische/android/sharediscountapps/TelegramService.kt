@@ -72,6 +72,13 @@ class TelegramService : JobService() {
             "{\"text\":\"/auchan auchansubscribe\",\"hide\":false}," +
             "{\"text\":\"/verniy verniysubscribe\",\"hide\":false}" +
             "]]}"
+    private val replyMarkupAdmin = "{\"keyboard\":[[" +
+            "{\"text\":\"/add_user\",\"callback_data\":\"/5ka_new\",\"hide\":false}," +
+            "{\"text\":\"/list_users\",\"hide\":false}" +
+            "],[" +
+            "{\"text\":\"/card_approve_user\",\"hide\":false}," +
+            "{\"text\":\"/card_unapprove_user\",\"hide\":false}" +
+            "]]}"
     private val help =
         "нажатие на кнопку с названием магазина - возвращает текущий код для магазина\n" +
                 "если послать комманду '/5ka subscribe' - подписка на код, при генерации нового кода он будет сразу присылаться в телеграм в беззвучном режиме\n" +
@@ -167,6 +174,46 @@ class TelegramService : JobService() {
         }
     }
 
+    private fun cardUnApproveUser(username: String) = _cardApproveUser(username, false)
+    private fun cardApproveUser(username: String) = _cardApproveUser(username, true)
+    private fun _cardApproveUser(username: String, action: Boolean) {
+        val filteredUsername = filteredUsername(username)
+        var users = SettingsUtil.loadAppTelegramUsers(applicationContext)
+        users.users.firstOrNull { it.username == filteredUsername }?.let {
+            it.approved = action
+        }
+        SettingsUtil.saveAppTelegramUsers(users, applicationContext)
+        sendBroadcast(Intent(MainActivity4.UPDATE_UI))
+    }
+
+    private fun addUser(username: String) {
+        val filteredUsername = filteredUsername(username)
+        var users = SettingsUtil.loadAppTelegramUsers(applicationContext)
+        var user =
+            users.users.filter { it.username == filteredUsername }.firstOrNull() ?: AppTelegramUser(
+                filteredUsername,
+                0,
+                System.currentTimeMillis(),
+                false,
+                false
+            )
+        user.timeLast = 0
+        users.users.add(user)
+        SettingsUtil.saveAppTelegramUsers(users, applicationContext)
+        sendBroadcast(Intent(MainActivity4.UPDATE_UI))
+    }
+
+    private fun filteredUsername(username: String) = if (username.substring(0, 1) == "@") {
+        username.substring(1);
+    } else {
+        username
+    }
+
+    private fun listUsers() =
+        SettingsUtil.loadAppTelegramUsers(applicationContext).users.joinToString(separator = "\n") {
+            "${it.username} ${TimeUtil.formatTimeFromLong(it.timeLast)} ${it.approved} ${it.admin}"
+        }
+
     fun processGetUpdatesItem(item: GetUpdatesItem) {
         val username = item.message?.from?.username
         if (username?.isNotEmpty() == true) {
@@ -177,8 +224,12 @@ class TelegramService : JobService() {
                     username,
                     item.message?.from?.id ?: 0,
                     System.currentTimeMillis(),
+                    false,
                     false
                 )
+            if (0.toLong() == user.telegramId) {
+                user.telegramId = item.message?.from?.id ?: 0
+            }
             user.timeLast = System.currentTimeMillis()
             users.users.add(user)
             SettingsUtil.saveAppTelegramUsers(users, applicationContext)
@@ -250,6 +301,19 @@ class TelegramService : JobService() {
                 reply = subscribeUnsubscribe(subscribers, "verniy", item, reply)
                 reply = subscribeUnsubscribe(subscribers, "pyaterka", item, reply)
                 sendMessage(item.message?.chat?.id!!, "podpiska", reply)
+            } else if (text == "/admin" && user.admin) {
+                sendMessage(item.message?.chat?.id!!, "admin", replyMarkupAdmin)
+            } else if (text == "/add_user" && user.admin) {
+                commandSecond?.let { addUser(commandSecond) }
+                sendMessage(item.message?.chat?.id!!, listUsers(), replyMarkupAdmin)
+            } else if (text == "/list_users" && user.admin) {
+                sendMessage(item.message?.chat?.id!!, listUsers(), replyMarkupAdmin)
+            } else if (text == "/card_approve_user" && user.admin) {
+                commandSecond?.let { cardApproveUser(commandSecond) }
+                sendMessage(item.message?.chat?.id!!, listUsers(), replyMarkupAdmin)
+            } else if (text == "/card_unapprove_user" && user.admin) {
+                commandSecond?.let { cardUnApproveUser(commandSecond) }
+                sendMessage(item.message?.chat?.id!!, listUsers(), replyMarkupAdmin)
             } else {
                 sendMessage(item.message?.chat?.id!!, "hi! ${item.message?.text}")
             }
