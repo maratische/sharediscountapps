@@ -50,6 +50,7 @@ public class MyAccessibilityService extends AccessibilityService {
     private String verniy = "com.ru.verniy";
     private String magnit = "ru.tander.magnit";
     private String pyaterka = "ru.pyaterochka.app.browser";
+    private String smart = "gb.sweetlifecl";
 
     @Override
     public void onAccessibilityEvent(AccessibilityEvent event) {
@@ -93,6 +94,12 @@ public class MyAccessibilityService extends AccessibilityService {
         SettingsUtil.Companion.saveSettings("start", start, getApplicationContext());
         sendBroadcast(new Intent(MainActivity4.UPDATE_UI));
 
+
+        var smart = SettingsUtil.Companion.loadSettings("smart", getApplicationContext());
+        if (smart.getActive() && smart.getTimeLast() + 1000 * 60 * 60 * 24 < System.currentTimeMillis()) {
+            performActionSmart();
+            return;
+        }
 
         var pyaterka = SettingsUtil.Companion.loadSettings("pyaterka", getApplicationContext());
         if (pyaterka.getActive() && pyaterka.getTimeLast() + 1000 * 60 * 60 * 24 < System.currentTimeMillis()) {
@@ -173,6 +180,39 @@ public class MyAccessibilityService extends AccessibilityService {
         }
     }
 
+
+    private void performActionSmart() {
+        try {
+            Context context = getApplicationContext();
+            Intent intent = context.getPackageManager().getLaunchIntentForPackage(smart);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(intent);
+
+            handlerFindElementById(handler, "android.view.View", "gb.sweetlifecl:id/view_qr_bar", 7, 5,(t0) -> {
+                clickIsClicable(t0);
+                handlerFindElementByText(handler, "android.widget.TextView", null, "Ваша карта", 5, 1, (t) -> {
+                        takeScreenshot(new MyTakeScreenshotCallback("smart.jpg", "smart", true, 2));
+                    return null;
+                }, null);
+                    return null;
+            }, (t0) -> {
+                performGlobalAction(GLOBAL_ACTION_BACK);
+                handlerFindElementById(handler, "android.view.View", "gb.sweetlifecl:id/view_qr_bar", 7, 5,(t1) -> {
+                            clickIsClicable(t1);
+                            handlerFindElementByText(handler, "android.widget.TextView", null, "Ваша карта", 5, 1, (t) -> {
+                                takeScreenshot(new MyTakeScreenshotCallback("smart.jpg", "smart", true, 2));
+                                return null;
+                            }, null);
+                            return null;
+                        }, null);
+                return null;
+            });
+        } catch (Exception e) {
+            System.out.println(" " + e.getMessage());
+            sendError(e.getMessage());
+        }
+    }
+
     private void performActionSpar() {
         try {
             Context context = getApplicationContext();
@@ -211,18 +251,6 @@ public class MyAccessibilityService extends AccessibilityService {
                 });
                 return null;
             });
-//            AccessibilityNodeInfo today = waitAndFindElementByText("android.widget.TextView", null, "бонус", 5, 1);
-//            if (today == null /*&& (
-//                    findElementByText("android.widget.TextView", weatherRootNode, null, "Только сегодня") != null
-//                    || findElementByText("android.widget.TextView", weatherRootNode, null, "Только для") != null)*/) {
-//                performGlobalAction(GLOBAL_ACTION_BACK);
-//            }
-//            today = waitAndFindElementByText("android.widget.TextView", null, "бонус", 5, 1);
-//            clickIsClicable(today);
-//            today = waitAndFindElementByText("android.widget.TextView", null, "Обновить", 5, 1);
-//
-//            takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
-
         } catch (Exception e) {
             System.out.println(" " + e.getMessage());
             sendError(e.getMessage());
@@ -439,7 +467,7 @@ public class MyAccessibilityService extends AccessibilityService {
     }
 
     private AccessibilityNodeInfo findElementById(String elementType, AccessibilityNodeInfo nodeInfo, String id) {
-        var elements = getRootInActiveWindow().findAccessibilityNodeInfosByViewId("ru.myauchan.droid:id/code_image_view");
+        var elements = getRootInActiveWindow().findAccessibilityNodeInfosByViewId(id);
         if (elements != null) {
             for (int i = 0; i < elements.size(); i++) {
                 var child = elements.get(i);

@@ -54,7 +54,11 @@ class TelegramService : JobService() {
             "],[" +
             "{\"text\":\"/auchan\",\"hide\":false}," +
             "{\"text\":\"/verniy\",\"hide\":false}," +
-            "{\"text\":\"/pogoda\",\"callback_data\":\"/pogoda\",\"hide\":false}" +
+            "{\"text\":\"/smart\",\"callback_data\":\"/smart\",\"hide\":false}" +
+            "],[" +
+            "{\"text\":\"/pogoda\",\"hide\":false}," +
+            "{\"text\":\" \",\"hide\":false}," +
+            "{\"text\":\" \",\"callback_data\":\" \",\"hide\":false}" +
             "]]}"
     private val replyMarkupCardsNew = "{\"keyboard\":[[" +
             "{\"text\":\"/5ka_new\",\"callback_data\":\"/5ka_new\",\"hide\":false}," +
@@ -62,7 +66,8 @@ class TelegramService : JobService() {
             "{\"text\":\"/magnit_new\",\"hide\":false}" +
             "],[" +
             "{\"text\":\"/auchan_new\",\"hide\":false}," +
-            "{\"text\":\"/verniy_new\",\"hide\":false}" +
+            "{\"text\":\"/verniy_new\",\"hide\":false}," +
+            "{\"text\":\"/smart_new\",\"hide\":false}" +
             "]]}"
     private val replyMarkupPodpiska = "{\"keyboard\":[[" +
             "{\"text\":\"/5ka pyaterkasubscribe\",\"callback_data\":\"/5ka subscribe\",\"hide\":false}," +
@@ -272,7 +277,9 @@ class TelegramService : JobService() {
             } else if (text == "/5ka" || text == "пятерочка" || text == "пятерка") {
                 sendPhoto(item.message?.chat?.id!!, "pyaterka", false)
                 commandFirst = "pyaterka"
-
+            } else if (text == "/smart" || text == "смарт" || text == "smart") {
+                sendPhoto(item.message?.chat?.id!!, "smart", false)
+                commandFirst = "smart"
             } else if (text == "/auchan_new") {
                 requestPhoto(item.message?.chat?.id!!, "auchan")
                 commandFirst = "auchan"
@@ -288,6 +295,9 @@ class TelegramService : JobService() {
             } else if (text == "/5ka_new") {
                 requestPhoto(item.message?.chat?.id!!, "pyaterka")
                 commandFirst = "pyaterka"
+            } else if (text == "/smart_new") {
+                requestPhoto(item.message?.chat?.id!!, "smart")
+                commandFirst = "smart"
             } else if (text == "/cards") {
                 sendMessage(item.message?.chat?.id!!, "cards", replyMarkupCards)
             } else if (text == "/cards_new") {
