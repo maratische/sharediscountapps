@@ -1,6 +1,10 @@
 package maratische.android.sharediscountapps
 
+import android.R.attr.label
+import android.R.attr.text
 import android.content.BroadcastReceiver
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -13,6 +17,7 @@ import android.provider.Settings
 import android.view.MotionEvent
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -88,8 +93,7 @@ class MainActivity4 : AppCompatActivity() {
         telegramToken.setText(SettingsUtil.loadTelegramKey(applicationContext))
         var telegramOffset = findViewById<EditText>(R.id.telegramOffset)
         telegramOffset.setText(SettingsUtil.loadOffset(applicationContext).toString())
-        var buttonSettings = findViewById<Button>(R.id.buttonSettings)
-        buttonSettings.setOnClickListener {
+        findViewById<Button>(R.id.buttonSettings).setOnClickListener {
             userActivity()
             try {
                 saveOffset(telegramOffset.text.toString().toLong(), applicationContext)
@@ -98,6 +102,28 @@ class MainActivity4 : AppCompatActivity() {
             }
             saveTelegramKey(telegramToken.text.toString(), applicationContext)
             telegramOffset.text
+        }
+        findViewById<Button>(R.id.buttonExportSettings).setOnClickListener {
+            val exportSettings = SettingsUtil.export(applicationContext)
+            val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("settings", exportSettings)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(applicationContext,"Exported",Toast.LENGTH_LONG).show()
+        }
+        findViewById<Button>(R.id.buttonImportSettings).setOnClickListener {
+            val clipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+            clipboard.primaryClip?.getItemAt(0)?.text?.toString()?.let {
+                val importValue = it
+                try {
+                    SettingsUtil.import(importValue, applicationContext)
+                    Toast.makeText(applicationContext, "Import $importValue", Toast.LENGTH_LONG)
+                        .show()
+                    updateUi()
+                } catch (e: Exception) {
+                    Toast.makeText(applicationContext, "Imported $importValue", Toast.LENGTH_LONG)
+                        .show()
+                }
+            }
         }
 
         Intent(applicationContext, MyAccessibilityService::class.java).apply {
@@ -118,19 +144,9 @@ class MainActivity4 : AppCompatActivity() {
     }
 
     private fun updateUi() {
-        val appsStart = listOf(
-            AppItem("activity", SettingsUtil.loadSettings("start", applicationContext), "start"),
-            AppItem("Weather", SettingsUtil.loadSettings("weather", applicationContext), "weather"),
-            AppItem("Auchan", SettingsUtil.loadSettings("auchan", applicationContext), "auchan"),
-            AppItem("Spar", SettingsUtil.loadSettings("spar", applicationContext), "spar"),
-            AppItem("Verniy", SettingsUtil.loadSettings("verniy", applicationContext), "verniy"),
-            AppItem("Magnit", SettingsUtil.loadSettings("magnit", applicationContext), "magnit"),
-            AppItem(
-                "Pyaterka",
-                SettingsUtil.loadSettings("pyaterka", applicationContext),
-                "pyaterka"
-            ),
-        )
+        val appsStart = SettingsUtil.listOfCards().map {
+            AppItem(it.first, SettingsUtil.loadSettings(it.second, applicationContext), it.second)
+        }.toList()
         (listApps.adapter as AppItemAdapter).setItems(appsStart)
 
         Thread {

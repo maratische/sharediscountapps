@@ -8,6 +8,7 @@
         <package android:name="com.ru.verniy"/>
         <package android:name="ru.myspar"/>
         <package android:name="ru.pyaterochka.app.browser"/>
+        <package android:name="maratische.android.sharediscountapps"/>
     </queries>
 
     <uses-permission android:name="android.permission.INTERNET" />

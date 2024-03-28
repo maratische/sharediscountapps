@@ -1,5 +1,7 @@
 package maratische.android.sharediscountapps;
 
+import static androidx.core.app.ActivityCompat.startActivityForResult;
+
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.GestureDescription;
 import android.content.Context;
@@ -12,6 +14,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.Display;
 import android.view.accessibility.AccessibilityEvent;
@@ -140,7 +143,7 @@ public class MyAccessibilityService extends AccessibilityService {
                         clickIsClicable(t);
                         handlerFindElementByText(handler, "android.widget.TextView", null, "штрих", 10, 1,
                                 (t2) -> {
-                                    takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
+                                    takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false, 2));
                                     return null;
                                 },
                                 (t2) -> {//бывает не срабатывает открытие, пробуем еще раз
@@ -148,7 +151,7 @@ public class MyAccessibilityService extends AccessibilityService {
                                             (t3) -> {
                                                 handlerFindElementByText(handler, "android.widget.TextView", null, "штрих", 10, 1,
                                                         (t4) -> {
-                                                            takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false));
+                                                            takeScreenshot(new MyTakeScreenshotCallback("pyaterka.jpg", "pyaterka", false, 2));
                                                             return null;
                                                         }, null);
                                                 return null;
@@ -178,16 +181,16 @@ public class MyAccessibilityService extends AccessibilityService {
             context.startActivity(intent);
 
             handlerFindElementByText(handler, "android.widget.TextView", null, "Обновить", 5, 1, (t0) -> {
-                takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+                takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true, 1));
                 return null;
             }, (t0) -> {
                 handlerFindElementByText(handler, "android.widget.TextView", null, "бонус", 5, 1, (t) -> {
                     clickIsClicable(t);
                     handlerFindElementByText(handler, "android.widget.TextView", null, "Обновить", 5, 1, (t2) -> {
-                        takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+                        takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true, 2));
                         return null;
                     }, (t2) -> {
-                        takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+                        takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true, 2));
                         return null;
                     });
                     return null;
@@ -196,10 +199,10 @@ public class MyAccessibilityService extends AccessibilityService {
                     handlerFindElementByText(handler, "android.widget.TextView", null, "бонус", 5, 1, (t3) -> {
                         clickIsClicable(t3);
                         handlerFindElementByText(handler, "android.widget.TextView", null, "Обновить", 5, 1, (t4) -> {
-                            takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+                            takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true, 2));
                             return null;
                         }, (t4) -> {
-                            takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true));
+                            takeScreenshot(new MyTakeScreenshotCallback("spar.jpg", "spar", true, 2));
                             return null;
                         });
                         return null;
@@ -238,7 +241,7 @@ public class MyAccessibilityService extends AccessibilityService {
                     (t) -> {
                         clickIsClicable(t);
                         handler.postDelayed(() -> {
-                            takeScreenshot(new MyTakeScreenshotCallback("verniy.jpg", "verniy", true));
+                            takeScreenshot(new MyTakeScreenshotCallback("verniy.jpg", "verniy", true, 2));
                         }, 3000);
                         return null;
                     }, null);
@@ -258,7 +261,7 @@ public class MyAccessibilityService extends AccessibilityService {
             handlerFindElementByText(handler, "android.widget.TextView", null, "Показать", 7, 1,
                     (t) -> {
                         handler.postDelayed(() -> {
-                            takeScreenshot(new MyTakeScreenshotCallback("magnit.jpg", "magnit", true));
+                            takeScreenshot(new MyTakeScreenshotCallback("magnit.jpg", "magnit", true, 2));
                         }, 3000);
                         return null;
                     }, null);
@@ -280,7 +283,7 @@ public class MyAccessibilityService extends AccessibilityService {
                         clickIsClicable(t);
                         handlerFindElementByText(handler, "android.widget.TextView", null, "Ваша карта", 7, 1,
                                 (t2) -> {
-                                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
+                                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false, 2));
                                     return null;
                                 }, null);
                         return null;
@@ -293,7 +296,7 @@ public class MyAccessibilityService extends AccessibilityService {
                                         clickIsClicable(t3);
                                         handlerFindElementByText(handler, "android.widget.TextView", null, "Ваша карта", 7, 1,
                                                 (t4) -> {
-                                                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false));
+                                                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false, 2));
                                                     return null;
                                                 }, null);
                                         return null;
@@ -314,10 +317,11 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
+
             handlerFindElementByText(handler, "android.widget.TextView", "Today", null, 3, 1, (t) -> {
                 clickIsClicable(t);
                 handler.postDelayed(() -> {
-                    takeScreenshot(new MyTakeScreenshotCallback("weather.jpg", "weather", false));
+                    takeScreenshot(new MyTakeScreenshotCallback("weather.jpg", "weather", false, 1));
                 }, 1000 * 3);
                 return null;
             }, null);
@@ -445,31 +449,6 @@ public class MyAccessibilityService extends AccessibilityService {
             }
         }
         return null;
-//        if (nodeInfo == null) {
-//            return null;
-//        }
-//        for (int i = 0; i < nodeInfo.getChildCount(); i++) {
-//            AccessibilityNodeInfo child = nodeInfo.getChild(i);
-//            if (child != null && child.getClassName() != null) {
-//                if (child.getClassName().toString().equals(elementType)) {
-//                    if (child.getViewIdResourceName() != null || child.getPaneTitle() != null) {
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-//                            System.out.println(child.getViewIdResourceName() + " " + child.getUniqueId()+ " " + child.getWindowId() + " " + child.getPaneTitle());
-//                        }
-//                    }
-//                    if (child.getViewIdResourceName() != null && child.getViewIdResourceName().equals(id)) {
-//                        return child;
-//                    }
-//                }
-//            }
-//
-//            AccessibilityNodeInfo button = findElementById(elementType, child, id);
-//            if (button != null) {
-//                return button;
-//            }
-//        }
-//
-//        return null;
     }
 
     public void saveTempBitmap(String fname, Bitmap bitmap) {
@@ -534,11 +513,13 @@ public class MyAccessibilityService extends AccessibilityService {
         String filename;
         String timeSettingsName;
         boolean needScanQrCode;
+        int countOfBack;
 
-        MyTakeScreenshotCallback(String filename, String timeSettingsName, boolean needScanQrCode) {
+        MyTakeScreenshotCallback(String filename, String timeSettingsName, boolean needScanQrCode, int countOfBack) {
             this.filename = filename;
             this.timeSettingsName = timeSettingsName;
             this.needScanQrCode = needScanQrCode;
+            this.countOfBack = countOfBack;
         }
 
         @RequiresApi(api = Build.VERSION_CODES.R)
@@ -576,21 +557,19 @@ public class MyAccessibilityService extends AccessibilityService {
 
             settings.setTimeLast(System.currentTimeMillis());
             SettingsUtil.Companion.saveSettings(timeSettingsName, settings, getApplicationContext());
+
+            postDelayedActionBack(countOfBack);
+        }
+
+        void postDelayedActionBack(int countOfBack) {
+            --countOfBack;
+            int finalCountOfBack = countOfBack;
             handler.postDelayed(() -> {
                 performGlobalAction(GLOBAL_ACTION_BACK);
-                handler.postDelayed(() -> {
-                    performGlobalAction(GLOBAL_ACTION_BACK);
-                    handler.postDelayed(() -> {
-                        performGlobalAction(GLOBAL_ACTION_HOME);
-                        handler.postDelayed(() -> {
-                            Context context = getApplicationContext();
-                            Intent intent = context.getPackageManager().getLaunchIntentForPackage("maratische.android.sharediscountapps");
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
-                            context.startActivity(intent);
-                        }, 1000);
-                    }, 1000);
-                }, 1000);
-            }, 3000);
+                if (finalCountOfBack >0) {
+                    postDelayedActionBack(finalCountOfBack);
+                }
+            }, 1000);
         }
 
         @Override
