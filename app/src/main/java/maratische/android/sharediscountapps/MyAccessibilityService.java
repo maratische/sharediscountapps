@@ -289,7 +289,7 @@ public class MyAccessibilityService extends AccessibilityService {
             handlerFindElementByText(handler, "android.widget.TextView", null, "Показать", 7, 1,
                     (t) -> {
                         handler.postDelayed(() -> {
-                            takeScreenshot(new MyTakeScreenshotCallback("magnit.jpg", "magnit", true, 2));
+                            takeScreenshot(new MyTakeScreenshotCallback("magnit.jpg", "magnit", true, 1));
                         }, 3000);
                         return null;
                     }, null);
@@ -306,30 +306,32 @@ public class MyAccessibilityService extends AccessibilityService {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             context.startActivity(intent);
 
-            handlerFindElementById(handler, "android.widget.ImageView", "ru.myauchan.droid:id/code_image_view", 7, 1,
+            handlerFindElementById(handler, "android.widget.ImageView", "ru.myauchan.droid:id/code_image_view", 7, 5,
                     (t) -> {
-                        clickIsClicable(t);
-                        handlerFindElementByText(handler, "android.widget.TextView", null, "Ваша карта", 7, 1,
-                                (t2) -> {
-                                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false, 2));
-                                    return null;
-                                }, null);
+                        takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false, 1));
+//                        clickIsClicable(t);
+//                        handlerFindElementByText(handler, "android.widget.TextView", null, "Ваша карта", 7, 5,
+//                                (t2) -> {
+//                                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false, 2));
+//                                    return null;
+//                                }, null);
                         return null;
                     }, (t) -> {
-                        //не нашли кнопку, вдруг что на экране
-                        performGlobalAction(GLOBAL_ACTION_BACK);
-                        handler.postDelayed(() -> {
-                            handlerFindElementById(handler, "android.widget.ImageView", "ru.myauchan.droid:id/code_image_view", 7, 1,
-                                    (t3) -> {
-                                        clickIsClicable(t3);
-                                        handlerFindElementByText(handler, "android.widget.TextView", null, "Ваша карта", 7, 1,
-                                                (t4) -> {
-                                                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false, 2));
-                                                    return null;
-                                                }, null);
-                                        return null;
-                                    }, null);
-                        }, 3000);
+                        takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false, 1));
+//                        //не нашли кнопку, вдруг что на экране
+//                        performGlobalAction(GLOBAL_ACTION_BACK);
+//                        handler.postDelayed(() -> {
+//                            handlerFindElementById(handler, "android.widget.ImageView", "ru.myauchan.droid:id/code_image_view", 7, 1,
+//                                    (t3) -> {
+//                                        clickIsClicable(t3);
+//                                        handlerFindElementByText(handler, "android.widget.TextView", null, "Ваша карта", 7, 1,
+//                                                (t4) -> {
+//                                                    takeScreenshot(new MyTakeScreenshotCallback("auchan.jpg", "auchan", false, 2));
+//                                                    return null;
+//                                                }, null);
+//                                        return null;
+//                                    }, null);
+//                        }, 3000);
                         return null;
                     });
         } catch (Exception e) {
