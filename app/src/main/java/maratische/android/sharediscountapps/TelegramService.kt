@@ -79,6 +79,7 @@ class TelegramService : JobService() {
             "]]}"
     private val replyMarkupAdmin = "{\"keyboard\":[[" +
             "{\"text\":\"/add_user\",\"callback_data\":\"/5ka_new\",\"hide\":false}," +
+            "{\"text\":\"/remove    _user\",\"callback_data\":\"/5ka_new\",\"hide\":false}," +
             "{\"text\":\"/list_users\",\"hide\":false}" +
             "],[" +
             "{\"text\":\"/card_approve_user\",\"hide\":false}," +
@@ -208,6 +209,16 @@ class TelegramService : JobService() {
         sendBroadcast(Intent(MainActivity4.UPDATE_UI))
     }
 
+    private fun removeUser(username: String) {
+        val filteredUsername = filteredUsername(username)
+        var users = SettingsUtil.loadAppTelegramUsers(applicationContext)
+        users.users.firstOrNull { it.username == filteredUsername }?.let {
+            users.users.remove(it)
+        }
+        SettingsUtil.saveAppTelegramUsers(users, applicationContext)
+        sendBroadcast(Intent(MainActivity4.UPDATE_UI))
+    }
+
     private fun filteredUsername(username: String) = if (username.substring(0, 1) == "@") {
         username.substring(1);
     } else {
@@ -315,6 +326,9 @@ class TelegramService : JobService() {
                 sendMessage(item.message?.chat?.id!!, "admin", replyMarkupAdmin)
             } else if (text == "/add_user" && user.admin) {
                 commandSecond?.let { addUser(commandSecond) }
+                sendMessage(item.message?.chat?.id!!, listUsers(), replyMarkupAdmin)
+            } else if (text == "/remove_user" && user.admin) {
+                commandSecond?.let { removeUser(commandSecond) }
                 sendMessage(item.message?.chat?.id!!, listUsers(), replyMarkupAdmin)
             } else if (text == "/list_users" && user.admin) {
                 sendMessage(item.message?.chat?.id!!, listUsers(), replyMarkupAdmin)
