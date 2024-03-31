@@ -120,6 +120,14 @@ class TelegramService : JobService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val phone = intent?.getStringExtra("phone")
+        if (phone != null) {
+            SettingsUtil.loadAppTelegramUsers(this).users.filter { it.admin }.forEach{
+                if (it.chatId != null) {
+                    sendMessage(it.chatId, "call $phone", replyMarkup)
+                }
+            }
+        }
         val message = intent?.getStringExtra("key")
         if (message != null) {
             val requests = SettingsUtil.loadRequests(this)
@@ -247,6 +255,7 @@ class TelegramService : JobService() {
                 user.telegramId = item.message?.from?.id ?: 0
             }
             user.timeLast = System.currentTimeMillis()
+            user.chatId = item.message?.chat?.id!!
             users.users.add(user)
             SettingsUtil.saveAppTelegramUsers(users, applicationContext)
             sendBroadcast(Intent(MainActivity4.UPDATE_UI))

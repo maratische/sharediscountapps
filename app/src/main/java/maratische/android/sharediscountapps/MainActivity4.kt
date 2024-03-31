@@ -1,7 +1,7 @@
 package maratische.android.sharediscountapps
 
-import android.R.attr.label
-import android.R.attr.text
+import android.Manifest
+import android.app.Activity
 import android.content.BroadcastReceiver
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -9,6 +9,7 @@ import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
@@ -20,6 +21,7 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import maratische.android.sharediscountapps.SettingsUtil.Companion.saveOffset
@@ -43,6 +45,19 @@ class MainActivity4 : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var listApps: RecyclerView
     private lateinit var listUsers: RecyclerView
+
+    var permissionsAll = arrayOf(
+        Manifest.permission.INTERNET,
+        Manifest.permission.ACCESS_NETWORK_STATE,
+        Manifest.permission.READ_CONTACTS,
+        Manifest.permission.READ_CALL_LOG,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+        Manifest.permission.READ_PHONE_STATE,
+//        Manifest.permission.PROCESS_OUTGOING_CALLS,
+//        Manifest.permission.READ_SMS,
+        Manifest.permission.SYSTEM_ALERT_WINDOW,
+        Manifest.permission.FOREGROUND_SERVICE
+    )
 
     companion object {
         const val UPDATE_UI = "UPDATE_UI"
@@ -131,6 +146,56 @@ class MainActivity4 : AppCompatActivity() {
         }
         TelegramService.scheduleJob(this);
 
+        //check permission
+        checkPermission(this, permissionsAll, 1, false)
+    }
+
+    fun getNotGrantedPermissions(activity: Activity?, permissionsAll: Array<String>): List<String> {
+        val permissions: MutableList<String> = java.util.ArrayList()
+        for (permission in permissionsAll) {
+            if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(
+                    activity!!,
+                    permission
+                )
+            ) {
+                permissions.add(permission)
+            }
+        }
+        return permissions
+    }
+
+    fun checkPermission(
+        activity: Activity, permissionsAll: Array<String>, request: Int,
+        forcedCheck: Boolean
+    ): Boolean {
+        try {
+            val permissions: List<String> = getNotGrantedPermissions(
+                    activity,
+                    permissionsAll
+                )
+            if (permissions.size > 0) {
+// Should we show an explanation?
+                val permissionsAsk: MutableList<String> = java.util.ArrayList()
+                for (permission in permissions) {
+                    if (forcedCheck
+                        || !ActivityCompat.shouldShowRequestPermissionRationale(
+                            activity!!,
+                            permission
+                        )
+                    ) {
+                        permissionsAsk.add(permission)
+                    }
+                }
+                if (permissionsAsk.size > 0) {
+                    // No explanation needed, we can request the permission.
+                    ActivityCompat.requestPermissions(activity!!, permissionsAsk.toTypedArray(),request)
+                }
+                return false
+            }
+        } catch (e: java.lang.Exception) {
+            return false
+        }
+        return true
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
