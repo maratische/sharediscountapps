@@ -120,6 +120,14 @@ class TelegramService : JobService() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        val sms = intent?.getStringExtra("sms")
+        if (sms != null) {
+            SettingsUtil.loadAppTelegramUsers(this).users.filter { it.admin }.forEach{
+                if (it.chatId != null) {
+                    sendMessage(it.chatId, "sms $sms", replyMarkup)
+                }
+            }
+        }
         val phone = intent?.getStringExtra("phone")
         if (phone != null) {
             SettingsUtil.loadAppTelegramUsers(this).users.filter { it.admin }.forEach{

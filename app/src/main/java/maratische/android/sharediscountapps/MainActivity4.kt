@@ -56,7 +56,8 @@ class MainActivity4 : AppCompatActivity() {
 //        Manifest.permission.PROCESS_OUTGOING_CALLS,
 //        Manifest.permission.READ_SMS,
         Manifest.permission.SYSTEM_ALERT_WINDOW,
-        Manifest.permission.FOREGROUND_SERVICE
+        Manifest.permission.FOREGROUND_SERVICE,
+        Manifest.permission.RECEIVE_SMS,
     )
 
     companion object {
